@@ -66,7 +66,7 @@ export default function RunDetailPage({ params }: PageProps) {
         <GraphViz runId={runId} workflowSlice={run.workflow} />
       )}
 
-      {run?.state?.steps && (run.state.steps as any[]).length > 0 && (
+      {!!run?.state?.steps && (run.state.steps as any[]).length > 0 && (
         <AgentTimeline run={run} />
       )}
 
@@ -86,7 +86,7 @@ export default function RunDetailPage({ params }: PageProps) {
         <Card>
           <CardTitle>Error</CardTitle>
           <pre className="mt-4 rounded-[12px] bg-[color:var(--color-error-bg)] border border-[color:var(--color-hairline)] p-4 text-body-sm text-[color:var(--color-error-text)] tabular whitespace-pre-wrap">
-            {run.error}
+            {String(run.error)}
           </pre>
         </Card>
       )}

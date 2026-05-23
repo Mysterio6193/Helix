@@ -15,11 +15,14 @@ from helix.models.workflow import Asset, Task, WorkflowRun
 
 async def emit_event(*, run_id: str | UUID, kind: str, payload: dict[str, Any]) -> None:
     """Publish a Redis event on the run channel + persist Event row."""
+    run_uuid = UUID(str(run_id)) if isinstance(run_id, str) else run_id
     await publish(
-        channel=channel_for_run(str(run_id)),
+        None,
+        channel=channel_for_run(run_uuid),
         kind=kind,
         payload=payload,
-        run_id=str(run_id),
+        workflow_run_id=run_uuid,
+        persist=False,
     )
 
 

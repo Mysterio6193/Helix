@@ -177,6 +177,8 @@ async def handle_client(reader, writer):
                     del zset[member]
                     
                 writer.write(f":{len(to_remove)}\r\n".encode('utf-8'))
+            elif cmd == "PUBLISH":
+                writer.write(b":0\r\n")
             else:
                 print(f"[!] Unsupported command: {cmd}")
                 writer.write(b"-ERR unknown command\r\n")
