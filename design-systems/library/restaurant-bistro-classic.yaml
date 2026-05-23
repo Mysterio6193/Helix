@@ -1,0 +1,83 @@
+slug: restaurant-bistro-classic
+name: Bistro Classic
+school: editorial-luxury
+is_school: false
+description: "Rich mahogany accents, warm cream backgrounds, and elegant serif display typography. Ideal for fine dining bistros."
+tags:
+  - "restaurant"
+  - "classic"
+  - "french"
+  - "bistro"
+  - "warm"
+palette:
+  background: "#FDFBF7"
+  surface: "#FAF5EC"
+  ink: "#1E1815"
+  body: "#3A312B"
+  muted: "#7C6E64"
+  hairline: "#E6DEC9"
+  accent: "#8C2A1C"
+typography:
+  family_primary: Playfair Display
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display:
+      size: 60
+      weight: 600
+      tracking: -1.0
+    heading:
+      size: 28
+      weight: 500
+      tracking: -0.2
+    body:
+      size: 16
+      weight: 400
+      tracking: 0
+    label:
+      size: 12
+      weight: 600
+      tracking: 0.8
+      uppercase: true
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 40
+    xl: 64
+    hero: 96
+radius:
+  sm: 2
+  md: 4
+  lg: 6
+motion:
+  duration:
+    base: 300
+  easing:
+    standard: "cubic-bezier(0.25, 1, 0.5, 1)"
+components:
+  buttons:
+    shape: pill
+    variants:
+      primary:
+        bg: accent
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 1
+          color: hairline
+  cards:
+    radius: lg
+    border: hairline
+    bg: surface
+rules:
+  do:
+    - "Use generous margin around display text"
+    - "Emphasize beautiful photography"
+  dont:
+    - "Mix bright neon elements with mahogany hues"
+    - "Use large blocky geometric components"

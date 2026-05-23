@@ -1,0 +1,56 @@
+slug: editorial-luxury
+name: Editorial Luxury
+school: editorial-luxury
+is_school: true
+description: >
+  Magazine-grade serif typography, deep contrast palette, asymmetric grid, photographic
+  hero usage. References: The New York Times Style, Aesop journal, Le Labo, fine dining
+  identities. Best for chef-driven concepts, omakase, hotel restaurants, premium spirits.
+tags: [editorial, luxury, serif, photographic, high-contrast, magazine]
+
+palette:
+  background: "#FAF7F2"
+  surface: "#F0EBE2"
+  ink: "#1A1410"
+  body: "#3E342B"
+  muted: "#8C7E6E"
+  hairline: "#D7CFC1"
+  accent: "#7A1F1F"
+
+typography:
+  family_primary: GT Sectra
+  family_secondary: Inter
+  numeric: oldstyle-nums
+  scale:
+    display: { size: 88, weight: 400, tracking: -1, italic_optional: true }
+    heading: { size: 32, weight: 400, tracking: -0.2 }
+    body:    { size: 17, weight: 400, tracking: 0, family: family_secondary }
+    label:   { size: 11, weight: 500, tracking: 1.4, uppercase: true, family: family_secondary }
+
+spacing:
+  base: 8
+  scale: { xs: 8, sm: 16, md: 32, lg: 56, xl: 88, hero: 128 }
+
+radius:
+  sm: 0
+  md: 2
+  lg: 4
+
+motion:
+  duration: { base: 320 }
+  easing: { standard: "ease-in-out" }
+
+components:
+  buttons:
+    shape: square
+    variants:
+      primary: { bg: ink, fg: background }
+      secondary: { bg: transparent, fg: ink, border: { width: 1, color: ink } }
+  cards:
+    radius: sm
+    border: hairline
+    bg: surface
+
+rules:
+  do: ["Lead with photography.", "Use italic display occasionally.", "Asymmetric grids."]
+  dont: ["Round corners > 4px.", "Saturate the palette.", "Use sans for display."]

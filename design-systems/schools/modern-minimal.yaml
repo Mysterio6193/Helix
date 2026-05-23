@@ -1,0 +1,56 @@
+slug: modern-minimal
+name: Modern Minimal
+school: modern-minimal
+is_school: true
+description: >
+  Clean grid-driven, generous whitespace, restrained palette, geometric sans typography.
+  References: Apple, Aesop, Bang & Olufsen, Muji. Best for premium, considered restaurant
+  identities that want to feel timeless and quietly confident.
+tags: [minimal, modern, neutral, geometric, premium]
+
+palette:
+  background: "#FFFFFF"
+  surface: "#FAFAFA"
+  ink: "#111111"
+  body: "#3D3D3D"
+  muted: "#8A8A8A"
+  hairline: "#E4E4E4"
+  accent: "#1F4FBF"
+
+typography:
+  family_primary: Inter
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display: { size: 64, weight: 500, tracking: -1.5 }
+    heading: { size: 28, weight: 500, tracking: -0.4 }
+    body:    { size: 16, weight: 400, tracking: 0 }
+    label:   { size: 12, weight: 500, tracking: 0.6, uppercase: true }
+
+spacing:
+  base: 8
+  scale: { xs: 8, sm: 16, md: 24, lg: 40, xl: 64, hero: 96 }
+
+radius:
+  sm: 4
+  md: 6
+  lg: 8
+
+motion:
+  duration: { base: 240 }
+  easing: { standard: "ease" }
+
+components:
+  buttons:
+    shape: rounded
+    variants:
+      primary: { bg: ink, fg: background }
+      secondary: { bg: background, fg: ink, border: { width: 1, color: ink } }
+  cards:
+    radius: lg
+    border: hairline
+    bg: background
+
+rules:
+  do: ["Use generous negative space.", "Limit accent color to <5% of any view."]
+  dont: ["Use saturated gradients.", "Mix more than 2 type weights."]

@@ -1,0 +1,58 @@
+slug: brutalist-bold
+name: Brutalist Bold
+school: brutalist-bold
+is_school: true
+description: >
+  Raw structural typography, mono accents, oversized headers, deliberate asymmetry,
+  high-contrast slabs of color. References: Balenciaga, MSCHF, hardcore craft beer,
+  natural wine bars, streetwear-adjacent restaurants. Best for irreverent, anti-polish
+  identities that want to feel current and unapologetic.
+tags: [brutalist, bold, mono, asymmetric, slab, anti-corporate]
+
+palette:
+  background: "#F2F2EE"
+  surface: "#E8E6DD"
+  ink: "#000000"
+  body: "#1A1A1A"
+  muted: "#6E6E6E"
+  hairline: "#000000"
+  accent: "#FF3300"
+
+typography:
+  family_primary: Space Grotesk
+  family_secondary: JetBrains Mono
+  numeric: tabular-nums
+  scale:
+    display: { size: 120, weight: 700, tracking: -3, uppercase_optional: true }
+    heading: { size: 40, weight: 700, tracking: -0.8, uppercase_optional: true }
+    body:    { size: 16, weight: 400, tracking: 0 }
+    label:   { size: 12, weight: 500, tracking: 0, family: family_secondary }
+
+spacing:
+  base: 8
+  scale: { xs: 8, sm: 12, md: 24, lg: 40, xl: 64, hero: 120 }
+
+radius:
+  sm: 0
+  md: 0
+  lg: 0
+
+motion:
+  duration: { base: 120 }
+  easing: { standard: "step-end" }
+
+components:
+  buttons:
+    shape: square
+    variants:
+      primary: { bg: ink, fg: background }
+      secondary: { bg: background, fg: ink, border: { width: 2, color: ink } }
+      accent: { bg: accent, fg: ink }
+  cards:
+    radius: sm
+    border: { width: 2, color: ink }
+    bg: surface
+
+rules:
+  do: ["Use oversized type that breaks grids.", "Use raw mono labels.", "High contrast slabs."]
+  dont: ["Round any corners.", "Apply soft shadows.", "Use pastel palettes."]

@@ -1,0 +1,70 @@
+[project]
+name = "helix-api"
+version = "0.1.0"
+description = "Helix FastAPI gateway, agent runtime, skills, workflows"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.30.6",
+    "pydantic==2.9.0",
+    "pydantic-settings==2.5.2",
+    "sqlalchemy[asyncio]==2.0.34",
+    "alembic==1.13.2",
+    "asyncpg==0.29.0",
+    "psycopg2-binary==2.9.9",
+    "redis==5.0.8",
+    "boto3==1.35.0",
+    "pgvector==0.3.3",
+    "openai==1.51.0",
+    "anthropic==0.34.2",
+    "google-genai==0.3.0",
+    "replicate==0.34.1",
+    "httpx==0.27.2",
+    "PyYAML==6.0.2",
+    "python-frontmatter==1.1.0",
+    "python-multipart==0.0.10",
+    "structlog==24.4.0",
+    "langgraph==0.2.16",
+    "langfuse>=2.0.0",
+    "cryptography==43.0.1",
+    "PyGithub==2.4.0",
+    "apscheduler==3.10.4",
+    "tenacity>=8.4.0",
+    "Pillow==10.4.0",
+    "websockets==13.1",
+    "orjson==3.10.7",
+    "watchfiles==0.24.0",
+    "aiohttp>=3.9.0",
+    "prometheus-client>=0.20.0",
+    "stripe>=10.0.0",
+]
+
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.3",
+    "pytest-asyncio==0.24.0",
+    "ruff==0.6.8",
+    "mypy==1.11.2",
+    "httpx==0.27.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "C4", "T20"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["helix*"]

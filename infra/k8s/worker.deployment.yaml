@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helix-worker
+  labels:
+    app: helix
+    component: worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: helix
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: helix
+        component: worker
+    spec:
+      terminationGracePeriodSeconds: 45
+      containers:
+        - name: worker
+          image: helix-api:latest
+          command: ["python", "-m", "helix.workers.worker"]
+          ports:
+            - name: healthz
+              containerPort: 9090
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 2
+          envFrom:
+            - secretRef:
+                name: helix-secrets
+            - configMapRef:
+                name: helix-config
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi

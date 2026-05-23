@@ -1,0 +1,61 @@
+slug: playful-warm
+name: Playful Warm
+school: playful-warm
+is_school: true
+description: >
+  Hand-illustrated accents, warm earth-and-sun palette, rounded geometric type with
+  display flourishes, soft shadows, generous curvature. References: Oatly, Liquid Death's
+  softer cousins, Magic Spoon, juice / bakery / brunch concepts. Best for friendly DTC-style
+  food brands, cafes, bakeries, kid-friendly concepts.
+tags: [playful, warm, hand-drawn, friendly, dtc, rounded]
+
+palette:
+  background: "#FFF5E6"
+  surface: "#FFEAD1"
+  ink: "#3A1F0A"
+  body: "#5C3917"
+  muted: "#9B7A55"
+  hairline: "#E8C99B"
+  accent: "#E85D1F"
+  accent_2: "#5BB4A4"
+
+typography:
+  family_primary: DM Serif Display
+  family_secondary: DM Sans
+  numeric: lining-nums
+  scale:
+    display: { size: 72, weight: 400, tracking: -1, italic_optional: true }
+    heading: { size: 28, weight: 700, tracking: -0.2, family: family_secondary }
+    body:    { size: 16, weight: 400, tracking: 0, family: family_secondary }
+    label:   { size: 13, weight: 600, tracking: 0.3, family: family_secondary }
+
+spacing:
+  base: 8
+  scale: { xs: 8, sm: 16, md: 24, lg: 40, xl: 64, hero: 88 }
+
+radius:
+  sm: 8
+  md: 16
+  lg: 24
+  xl: 32
+  full: 9999
+
+motion:
+  duration: { base: 280 }
+  easing: { standard: "cubic-bezier(0.34, 1.56, 0.64, 1)" }
+
+components:
+  buttons:
+    shape: pill
+    variants:
+      primary: { bg: accent, fg: background }
+      secondary: { bg: background, fg: ink, border: { width: 2, color: ink } }
+  cards:
+    radius: lg
+    border: hairline
+    bg: surface
+    elevation: "0 4px 0 0 rgba(58,31,10,0.12)"
+
+rules:
+  do: ["Use hand-drawn accents.", "Mix serif display with friendly sans body.", "Use warm palettes."]
+  dont: ["Use cold blues.", "Apply heavy drop shadows.", "Use brutalist grids."]

@@ -1,0 +1,85 @@
+slug: entertainment-playful-warm-2
+name: Entertainment Playful Warm 2
+school: playful-warm
+is_school: false
+description: Custom brand visual identity for entertainment businesses leveraging a playful-warm signature school layout.
+tags:
+  - "entertainment"
+  - "playful-warm"
+  - "media"
+  - "music"
+  - "gaming"
+  - "creative"
+  - "fun"
+palette:
+  bg: "#FDF6E2"
+  accent: "#E93A57"
+  ink: "#1C1421"
+  body: "#4C3F54"
+  surface: "#FAEAD1"
+  muted: "#A38EA6"
+  hairline: "#ECC2B9"
+typography:
+  family_primary: Space Grotesk
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display:
+      size: 52
+      weight: 600
+      tracking: -1.0
+    heading:
+      size: 24
+      weight: 600
+      tracking: -0.3
+    body:
+      size: 15
+      weight: 400
+      tracking: 0
+    label:
+      size: 11
+      weight: 600
+      tracking: 0.8
+      uppercase: true
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 36
+    xl: 56
+    hero: 84
+radius:
+  sm: 8
+  md: 12
+  lg: 18
+motion:
+  duration:
+    base: 240
+  easing:
+    standard: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+components:
+  buttons:
+    shape: pill
+    variants:
+      primary:
+        bg: accent
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 1
+          color: hairline
+  cards:
+    radius: lg
+    border: hairline
+    bg: surface
+rules:
+  do:
+    - "Keep consistent with the entertainment design principles"
+    - "Use harmonized color accents"
+  dont:
+    - "Do not crowd components together"
+    - "Avoid saturated gradients over text content"

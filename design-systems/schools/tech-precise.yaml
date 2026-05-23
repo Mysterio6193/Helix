@@ -1,0 +1,61 @@
+slug: tech-precise
+name: Tech Precise
+school: tech-precise
+is_school: true
+description: >
+  Engineering-grade typographic system, neutral-with-electric-accent palette, fine
+  grid, mono details, ample data density. References: Linear, Vercel, Stripe, Anthropic,
+  developer-tools aesthetic. Best for ghost kitchens, automation-forward concepts, food
+  tech startups, restaurant SaaS demos.
+tags: [tech, precise, mono, neutral, electric-accent, dev-tools]
+
+palette:
+  background: "#0B0B0F"
+  surface: "#16161D"
+  surface_elev: "#1F1F28"
+  ink: "#F4F4F6"
+  body: "#C2C2CC"
+  muted: "#7A7A88"
+  hairline: "#26262F"
+  accent: "#5B8DEF"
+  accent_2: "#00E0A4"
+
+typography:
+  family_primary: Inter
+  family_secondary: JetBrains Mono
+  numeric: tabular-nums
+  scale:
+    display: { size: 56, weight: 600, tracking: -1.6 }
+    heading: { size: 24, weight: 600, tracking: -0.4 }
+    body:    { size: 15, weight: 400, tracking: 0 }
+    label:   { size: 12, weight: 500, tracking: 0, family: family_secondary }
+
+spacing:
+  base: 4
+  scale: { xs: 4, sm: 8, md: 12, lg: 20, xl: 32, hero: 64 }
+
+radius:
+  sm: 4
+  md: 6
+  lg: 10
+
+motion:
+  duration: { base: 160 }
+  easing: { standard: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
+
+components:
+  buttons:
+    shape: rounded
+    variants:
+      primary: { bg: ink, fg: background }
+      secondary: { bg: surface_elev, fg: ink, border: { width: 1, color: hairline } }
+      accent: { bg: accent, fg: background }
+  cards:
+    radius: md
+    border: hairline
+    bg: surface
+    elevation: "0 1px 0 0 rgba(255,255,255,0.04) inset"
+
+rules:
+  do: ["Dense data layouts.", "Mono labels on metrics.", "Use accent sparingly for state."]
+  dont: ["Use playful curves.", "Apply warm palettes.", "Use serif display."]

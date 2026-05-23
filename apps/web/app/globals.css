@@ -1,0 +1,359 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Helix — Dark OS Design Tokens
+   ============================================================
+   Inspired by the Helix OS mockup — deep dark backgrounds,
+   neon-tinted accents, glass surfaces, glowing node network.
+   ============================================================ */
+
+:root {
+  /* ---------- Dark Canvas (OS-style) ---------- */
+  --color-canvas: #0e0f12;
+  --color-surface: #13141a;
+  --color-surface-elev: #1a1c24;
+  --color-surface-glass: rgba(255, 255, 255, 0.04);
+  --color-surface-glass-hover: rgba(255, 255, 255, 0.07);
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-strong: rgba(255, 255, 255, 0.12);
+
+  /* ---------- Ink (reversed for dark) ---------- */
+  --color-ink: #f0f0f5;
+  --color-charcoal: #c8cad4;
+  --color-slate: #8e919e;
+  --color-steel: #6b6e7a;
+  --color-stone: #4a4d57;
+  --color-muted: #2e3040;
+
+  /* ---------- Brand gradients (vibrant, neon-glow) ---------- */
+  --gradient-brand-coral: linear-gradient(135deg, #ff6a4d 0%, #ff3d7f 100%);
+  --gradient-brand-magenta: linear-gradient(135deg, #ff3d7f 0%, #a24bff 100%);
+  --gradient-brand-blue: linear-gradient(135deg, #4d7bff 0%, #7ab6ff 100%);
+  --gradient-brand-purple: linear-gradient(135deg, #7b4dff 0%, #c04dff 100%);
+  --gradient-brand-amber: linear-gradient(135deg, #ffb347 0%, #ff7a4d 100%);
+  --gradient-brand-teal: linear-gradient(135deg, #00d4aa 0%, #00a8ff 100%);
+  --gradient-brand-green: linear-gradient(135deg, #00c896 0%, #00ff88 100%);
+
+  /* ---------- Node colors (for network graph) ---------- */
+  --node-red: #ff4d6d;
+  --node-teal: #00d4aa;
+  --node-purple: #a24bff;
+  --node-amber: #ffb347;
+  --node-green: #00c896;
+  --node-blue: #4d9fff;
+  --node-center: #ff7a4d;
+  --node-rainbow: conic-gradient(from 0deg, #ff4d6d, #ff7a4d, #ffb347, #00c896, #4d9fff, #a24bff, #ff4d6d);
+
+  /* ---------- Agent status colors ---------- */
+  --agent-thinking: #4d9fff;
+  --agent-evaluating: #ffb347;
+  --agent-drafting: #4d7bff;
+
+  /* ---------- Semantic ---------- */
+  --color-success-bg: rgba(0, 200, 150, 0.12);
+  --color-success-text: #00c896;
+  --color-warning-bg: rgba(255, 179, 71, 0.12);
+  --color-warning-text: #ffb347;
+  --color-error-bg: rgba(255, 77, 109, 0.12);
+  --color-error-text: #ff4d6d;
+  --color-info-bg: rgba(77, 159, 255, 0.12);
+  --color-info-text: #4d9fff;
+
+  /* ---------- Spacing (4px-based) ---------- */
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-hero: 96px;
+
+  /* ---------- Radius (16/32 signature) ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-3xl: 28px;
+  --radius-hero: 32px;
+  --radius-full: 9999px;
+
+  /* ---------- Elevation (dark glow) ---------- */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-raised: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-floating: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.8);
+  --shadow-glow-teal: 0 0 24px rgba(0, 212, 170, 0.3);
+  --shadow-glow-purple: 0 0 24px rgba(162, 75, 255, 0.3);
+  --shadow-glow-coral: 0 0 24px rgba(255, 106, 77, 0.3);
+
+  /* ---------- Typography ---------- */
+  --font-sans:
+    "DM Sans", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
+}
+
+@theme inline {
+  --color-canvas: #0e0f12;
+  --color-surface: #13141a;
+  --color-surface-elev: #1a1c24;
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-ink: #f0f0f5;
+  --color-charcoal: #c8cad4;
+  --color-slate: #8e919e;
+  --color-steel: #6b6e7a;
+  --color-stone: #4a4d57;
+  --color-muted: #2e3040;
+
+  --color-success-bg: rgba(0, 200, 150, 0.12);
+  --color-success-text: #00c896;
+  --color-warning-bg: rgba(255, 179, 71, 0.12);
+  --color-warning-text: #ffb347;
+  --color-error-bg: rgba(255, 77, 109, 0.12);
+  --color-error-text: #ff4d6d;
+  --color-info-bg: rgba(77, 159, 255, 0.12);
+  --color-info-text: #4d9fff;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-3xl: 28px;
+  --radius-hero: 32px;
+
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-raised: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-floating: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.8);
+
+  --font-sans: "DM Sans", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+html,
+body {
+  background: var(--color-canvas);
+  color: var(--color-charcoal);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(162, 75, 255, 0.4);
+  color: var(--color-ink);
+}
+
+/* Tabular nums for metrics */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Typography utilities (DESIGN.md §2)
+   ============================================================ */
+
+.text-display-hero {
+  font-size: 80px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+.text-display-xl {
+  font-size: 64px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -1.5px;
+}
+.text-display-lg {
+  font-size: 48px;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -1.2px;
+}
+.text-heading-xl {
+  font-size: 36px;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.text-heading-lg {
+  font-size: 28px;
+  line-height: 1.22;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+.text-heading-md {
+  font-size: 22px;
+  line-height: 1.28;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.text-heading-sm {
+  font-size: 18px;
+  line-height: 1.32;
+  font-weight: 600;
+}
+.text-body-lg {
+  font-size: 17px;
+  line-height: 1.55;
+  font-weight: 400;
+}
+.text-body-md {
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 400;
+}
+.text-body-sm {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.text-label {
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+.text-eyebrow {
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.text-micro {
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.text-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ============================================================
+   Vibrant product gradients
+   ============================================================ */
+
+.bg-brand-coral {
+  background: var(--gradient-brand-coral);
+}
+.bg-brand-magenta {
+  background: var(--gradient-brand-magenta);
+}
+.bg-brand-blue {
+  background: var(--gradient-brand-blue);
+}
+.bg-brand-purple {
+  background: var(--gradient-brand-purple);
+}
+.bg-brand-amber {
+  background: var(--gradient-brand-amber);
+}
+.bg-brand-teal {
+  background: var(--gradient-brand-teal);
+}
+.bg-brand-green {
+  background: var(--gradient-brand-green);
+}
+
+/* ============================================================
+   Glass surfaces
+   ============================================================ */
+.glass {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-hairline);
+}
+
+.glass-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: 16px;
+}
+
+/* ============================================================
+   Network graph animations
+   ============================================================ */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes orbit-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes line-flow {
+  0% { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes agent-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 currentColor; }
+  50% { transform: scale(1.1); box-shadow: 0 0 8px 2px currentColor; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes progress-fill {
+  0% { width: 0%; }
+  100% { width: var(--progress-w); }
+}
+
+@keyframes chart-draw {
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-stone);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-steel);
+}

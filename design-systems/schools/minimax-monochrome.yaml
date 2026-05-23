@@ -1,0 +1,196 @@
+slug: minimax-monochrome
+name: MiniMax Monochrome
+school: minimax-monochrome
+is_school: true
+description: >
+  Stark monochrome canvas (black ink on white) broken by a small number of vibrant
+  brand-gradient product cards. Single typeface (DM Sans). Pill buttons. Two card
+  families with deliberate 16/32 corner-radius signatures. Inspired by MiniMax's
+  brand language. Used for the Helix app shell and as a selectable school for
+  brand-internal screens.
+tags: [monochrome, vibrant, gradient, pill-buttons, dm-sans, editorial, app-ui]
+
+palette:
+  canvas: "#FFFFFF"
+  surface: "#FAFAFA"
+  surface_elev: "#F4F4F5"
+  hairline: "#E6E6E6"
+  ink: "#0A0A0A"
+  charcoal: "#1F1F1F"
+  slate: "#3A3A3A"
+  steel: "#6B6B6B"
+  stone: "#8E8E8E"
+  muted: "#B4B4B4"
+  brand_coral: ["#FF6A4D", "#FF3D7F"]
+  brand_magenta: ["#FF3D7F", "#A24BFF"]
+  brand_blue: ["#4D7BFF", "#7AB6FF"]
+  brand_purple: ["#7B4DFF", "#C04DFF"]
+  brand_amber: ["#FFB347", "#FF7A4D"]
+  success_bg: "#E8F5EE"
+  success_text: "#0F7B3A"
+  warning_bg: "#FFF6E0"
+  warning_text: "#7A4E00"
+  error_bg: "#FBE7E7"
+  error_text: "#9B1C1C"
+  info_bg: "#E8EEFF"
+  info_text: "#1F3A99"
+
+typography:
+  family_primary: DM Sans
+  family_fallback: Inter, system-ui, sans-serif
+  numeric: tabular-nums
+  scale:
+    display_hero: { size: 80, line_height: 1.10, weight: 700, tracking: -2 }
+    display_xl:   { size: 64, line_height: 1.10, weight: 700, tracking: -1.5 }
+    display_lg:   { size: 48, line_height: 1.12, weight: 700, tracking: -1.2 }
+    heading_xl:   { size: 36, line_height: 1.18, weight: 700, tracking: -0.6 }
+    heading_lg:   { size: 28, line_height: 1.22, weight: 600, tracking: -0.4 }
+    heading_md:   { size: 22, line_height: 1.28, weight: 600, tracking: -0.2 }
+    heading_sm:   { size: 18, line_height: 1.32, weight: 600, tracking: 0 }
+    body_lg:      { size: 17, line_height: 1.55, weight: 400, tracking: 0 }
+    body_md:      { size: 15, line_height: 1.55, weight: 400, tracking: 0 }
+    body_sm:      { size: 13, line_height: 1.50, weight: 400, tracking: 0 }
+    label:        { size: 13, line_height: 1.20, weight: 500, tracking: 0.2 }
+    eyebrow:      { size: 12, line_height: 1.20, weight: 600, tracking: 1.2, uppercase: true }
+    micro:        { size: 12, line_height: 1.40, weight: 500, tracking: 0 }
+
+spacing:
+  base: 4
+  scale:
+    xxs: 4
+    xs: 8
+    sm: 12
+    md: 16
+    lg: 24
+    xl: 32
+    "2xl": 48
+    "3xl": 64
+    hero: 96
+
+radius:
+  xs: 4
+  sm: 8
+  md: 12
+  lg: 16
+  xl: 20
+  "2xl": 24
+  "3xl": 28
+  hero: 32
+  full: 9999
+
+elevation:
+  flat: "none"
+  subtle: "0 1px 2px rgba(10,10,10,0.04)"
+  raised: "0 4px 12px rgba(10,10,10,0.06)"
+  floating: "0 12px 32px rgba(10,10,10,0.10)"
+  modal: "0 24px 64px rgba(10,10,10,0.18)"
+
+motion:
+  duration:
+    fast: 150
+    base: 200
+    slow: 320
+  easing:
+    standard: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+    exit: "ease-out"
+  patterns:
+    page_transition: "fade + 4px y-translate, 200ms"
+    card_hover: "shadow + 2px y-translate, 150ms"
+    asset_arrival: "fade + 8px y-translate + scale 0.98->1, 320ms"
+
+layout:
+  max_content_width: 1280
+  gutters:
+    mobile: 16
+    tablet: 24
+    desktop: 32
+  vertical_rhythm:
+    marketing: hero
+    app: "2xl"
+  docs_columns: { sidebar: 240, prose_max: 720, toc: 200 }
+  app_columns: { sidebar: 256, right_rail: 320 }
+  breakpoints: { mobile: 0, sm: 480, md: 768, lg: 1024, xl: 1280 }
+
+components:
+  buttons:
+    shape: pill
+    height: { sm: 32, md: 40, lg: 48 }
+    variants:
+      primary:    { bg: ink, fg: canvas }
+      secondary:  { bg: canvas, fg: ink, border: { width: 1, color: ink } }
+      tertiary:   { bg: surface, fg: ink }
+      link:       { bg: transparent, fg: ink, underline_on_hover: true }
+      icon_circular: { bg: surface, fg: ink, shape: circle, size: 40 }
+  cards:
+    vibrant_family:
+      radius: hero
+      text_color: ink
+      variants: [product_card_coral, product_card_magenta, product_card_blue, product_card_purple, product_card_photo]
+      usage_ratio: "1 vibrant per 2-3 quiet"
+    quiet_family:
+      radius: lg
+      bg: canvas
+      border: { width: 1, color: hairline }
+      variants: [card_base, card_feature, card_recommendation]
+  inputs:
+    text_input:  { height: 40, radius: sm, border: hairline, focus_ring: ink }
+    search_pill: { height: 44, radius: full, bg: surface }
+  tabs:
+    segmented: { radius: sm, track_bg: surface, active_bg: canvas, elevation: subtle }
+    pill:      { radius: full, inactive_bg: surface, active_bg: ink, active_fg: canvas }
+  badges:
+    radius: xs
+    typography: eyebrow
+    padding: "2px 8px"
+  promo:
+    cta_card: { radius: "3xl", headline_size: 64 }
+    banner:   { gradient: brand_amber, headline_size: 24 }
+  navigation:
+    top_nav: { height: 64, bg: canvas, border_bottom: hairline }
+    sidebar_item: { height: 36, radius: md, active_bg: surface_elev }
+    doc_toc: { rail_width: 2, active_color: ink }
+  tables:
+    data_table:
+      header_bg: surface
+      row_dividers_only: true
+      cell_typography: body_sm
+      row_hover_bg: surface
+  hero_band:
+    bg: canvas
+    headline: display_hero
+    subhead: body_lg
+    vertical_padding: hero
+  product_matrix:
+    columns: 12
+    ai_signature: "4 vibrant tiles: coral / magenta / blue / purple"
+  prose:
+    max_width: 720
+    body: body_md
+    code_inline: { radius: xs, bg: surface }
+    code_block:  { radius: sm, bg: surface }
+  footer:
+    bg: canvas
+    border_top: hairline
+    columns: 4
+    link_color: slate
+    link_hover: ink
+
+rules:
+  do:
+    - "Use DM Sans across the entire system; single typeface."
+    - "Pill buttons (rounded-full) for every primary action."
+    - "Reserve brand gradients for product/AI/hero content cards."
+    - "Use black ink text on vibrant gradient backgrounds (signature inversion)."
+    - "Hairline borders by default; elevation only on hover or modals."
+    - "Maintain 16/32 corner-radius split between quiet and vibrant card families."
+  dont:
+    - "Mix corner radii within the same surface group."
+    - "Apply brand gradients to chrome, buttons, or page backgrounds."
+    - "Introduce a second typeface."
+    - "Add color to chrome (sidebar, top nav, tables)."
+    - "Use shadows as decoration on flat cards."
+    - "Use white text on vibrant backgrounds — text must be ink."
+
+source: helix-internal
+source_path: design-systems/schools/minimax-monochrome.yaml
+enabled: true

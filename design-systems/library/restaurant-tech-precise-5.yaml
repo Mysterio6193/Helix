@@ -1,0 +1,84 @@
+slug: restaurant-tech-precise-5
+name: Restaurant Tech Precise 5
+school: tech-precise
+is_school: false
+description: Custom brand visual identity for restaurant businesses leveraging a tech-precise signature school layout.
+tags:
+  - "restaurant"
+  - "tech-precise"
+  - "dining"
+  - "cafe"
+  - "food"
+  - "bar"
+palette:
+  bg: "#FFFBF2"
+  accent: "#CE7B3C"
+  ink: "#2B1A0F"
+  body: "#5C3E2A"
+  surface: "#F6EDDF"
+  muted: "#A68974"
+  hairline: "#E6D4BE"
+typography:
+  family_primary: Plus Jakarta Sans
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display:
+      size: 52
+      weight: 600
+      tracking: -1.0
+    heading:
+      size: 24
+      weight: 600
+      tracking: -0.3
+    body:
+      size: 15
+      weight: 400
+      tracking: 0
+    label:
+      size: 11
+      weight: 600
+      tracking: 0.8
+      uppercase: true
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 36
+    xl: 56
+    hero: 84
+radius:
+  sm: 4
+  md: 8
+  lg: 12
+motion:
+  duration:
+    base: 240
+  easing:
+    standard: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+components:
+  buttons:
+    shape: rounded
+    variants:
+      primary:
+        bg: accent
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 1
+          color: hairline
+  cards:
+    radius: lg
+    border: hairline
+    bg: surface
+rules:
+  do:
+    - "Keep consistent with the restaurant design principles"
+    - "Use harmonized color accents"
+  dont:
+    - "Do not crowd components together"
+    - "Avoid saturated gradients over text content"

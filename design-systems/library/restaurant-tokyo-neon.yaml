@@ -1,0 +1,83 @@
+slug: restaurant-tokyo-neon
+name: Tokyo Neon
+school: brutalist-bold
+is_school: false
+description: "High-contrast dark-mode vibe with fluorescent pink and cyan details, perfect for modern izakayas."
+tags:
+  - "restaurant"
+  - "modern"
+  - "cyberpunk"
+  - "japanese"
+  - "neon"
+palette:
+  background: "#0D0D0F"
+  surface: "#16161A"
+  ink: "#F8F8F9"
+  body: "#CBCBCE"
+  muted: "#75757E"
+  hairline: "#2C2C35"
+  accent: "#FF2E93"
+typography:
+  family_primary: Space Grotesk
+  family_secondary: Inter
+  numeric: tabular-nums
+  scale:
+    display:
+      size: 64
+      weight: 700
+      tracking: -2.0
+    heading:
+      size: 30
+      weight: 700
+      tracking: -0.5
+    body:
+      size: 15
+      weight: 400
+      tracking: 0.1
+    label:
+      size: 11
+      weight: 700
+      tracking: 1.2
+      uppercase: true
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 36
+    xl: 56
+    hero: 84
+radius:
+  sm: 0
+  md: 0
+  lg: 0
+motion:
+  duration:
+    base: 180
+  easing:
+    standard: ease-in-out
+components:
+  buttons:
+    shape: square
+    variants:
+      primary:
+        bg: accent
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 2
+          color: ink
+  cards:
+    radius: sm
+    border: ink
+    bg: surface
+rules:
+  do:
+    - "Emphasize raw high-contrast typography"
+    - "Apply thick black borders on card components"
+  dont:
+    - "Use soft drop shadows"
+    - "Apply large rounded corners or pill buttons"

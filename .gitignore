@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+.turbo/
+.pnpm-store/
+
+# Env
+.env
+.env.local
+.env.docker
+infra/.env.docker
+*.env
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+
+# Build
+build/
+*.egg
+*.log
+
+# Data
+pg_data/
+minio_data/
+langfuse_data/
+*.sqlite
+*.db
+*.db.bak
+
+# Generated artifacts
+apps/api/alembic/.cache/

@@ -1,0 +1,84 @@
+slug: ecommerce-modern-minimal-6
+name: Ecommerce Modern Minimal 6
+school: modern-minimal
+is_school: false
+description: Custom brand visual identity for ecommerce businesses leveraging a modern-minimal signature school layout.
+tags:
+  - "ecommerce"
+  - "modern-minimal"
+  - "shop"
+  - "store"
+  - "apparel"
+  - "retail"
+palette:
+  bg: "#FAFAFC"
+  accent: "#722ED1"
+  ink: "#22075E"
+  body: "#595959"
+  surface: "#F9F0FF"
+  muted: "#9254DE"
+  hairline: "#D3ADF7"
+typography:
+  family_primary: Plus Jakarta Sans
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display:
+      size: 52
+      weight: 600
+      tracking: -1.0
+    heading:
+      size: 24
+      weight: 600
+      tracking: -0.3
+    body:
+      size: 15
+      weight: 400
+      tracking: 0
+    label:
+      size: 11
+      weight: 600
+      tracking: 0.8
+      uppercase: true
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 36
+    xl: 56
+    hero: 84
+radius:
+  sm: 4
+  md: 8
+  lg: 12
+motion:
+  duration:
+    base: 240
+  easing:
+    standard: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+components:
+  buttons:
+    shape: rounded
+    variants:
+      primary:
+        bg: accent
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 1
+          color: hairline
+  cards:
+    radius: lg
+    border: hairline
+    bg: surface
+rules:
+  do:
+    - "Keep consistent with the ecommerce design principles"
+    - "Use harmonized color accents"
+  dont:
+    - "Do not crowd components together"
+    - "Avoid saturated gradients over text content"

@@ -1,0 +1,85 @@
+slug: wellness-playful-warm-5
+name: Wellness Playful Warm 5
+school: playful-warm
+is_school: false
+description: Custom brand visual identity for wellness businesses leveraging a playful-warm signature school layout.
+tags:
+  - "wellness"
+  - "playful-warm"
+  - "spa"
+  - "yoga"
+  - "health"
+  - "skin"
+  - "organic"
+palette:
+  bg: "#F3F7F5"
+  accent: "#2E6F40"
+  ink: "#152E1D"
+  body: "#385240"
+  surface: "#E3EEE6"
+  muted: "#759B80"
+  hairline: "#CADCD0"
+typography:
+  family_primary: Space Grotesk
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display:
+      size: 52
+      weight: 600
+      tracking: -1.0
+    heading:
+      size: 24
+      weight: 600
+      tracking: -0.3
+    body:
+      size: 15
+      weight: 400
+      tracking: 0
+    label:
+      size: 11
+      weight: 600
+      tracking: 0.8
+      uppercase: true
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 36
+    xl: 56
+    hero: 84
+radius:
+  sm: 8
+  md: 12
+  lg: 18
+motion:
+  duration:
+    base: 240
+  easing:
+    standard: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+components:
+  buttons:
+    shape: pill
+    variants:
+      primary:
+        bg: accent
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 1
+          color: hairline
+  cards:
+    radius: lg
+    border: hairline
+    bg: surface
+rules:
+  do:
+    - "Keep consistent with the wellness design principles"
+    - "Use harmonized color accents"
+  dont:
+    - "Do not crowd components together"
+    - "Avoid saturated gradients over text content"

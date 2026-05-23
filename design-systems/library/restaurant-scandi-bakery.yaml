@@ -1,0 +1,83 @@
+slug: restaurant-scandi-bakery
+name: Scandi Bakery
+school: modern-minimal
+is_school: false
+description: "Minimalist aesthetics from Stockholm, utilizing pale wood tones, clean lines, and soft gray inks."
+tags:
+  - "restaurant"
+  - "bakery"
+  - "nordic"
+  - "scandi"
+  - "minimal"
+palette:
+  background: "#FDFDFD"
+  surface: "#F4F4F5"
+  ink: "#1E2022"
+  body: "#4A4D51"
+  muted: "#8A8D93"
+  hairline: "#E5E6E8"
+  accent: "#CBB59F"
+typography:
+  family_primary: Plus Jakarta Sans
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display:
+      size: 52
+      weight: 500
+      tracking: -1.2
+    heading:
+      size: 24
+      weight: 500
+      tracking: -0.3
+    body:
+      size: 15
+      weight: 400
+      tracking: 0
+    label:
+      size: 11
+      weight: 500
+      tracking: 1.0
+      uppercase: true
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 36
+    xl: 56
+    hero: 84
+radius:
+  sm: 3
+  md: 6
+  lg: 10
+motion:
+  duration:
+    base: 200
+  easing:
+    standard: ease
+components:
+  buttons:
+    shape: rounded
+    variants:
+      primary:
+        bg: ink
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 1
+          color: hairline
+  cards:
+    radius: md
+    border: hairline
+    bg: surface
+rules:
+  do:
+    - "Keep layouts simple and clean"
+    - "Use a warm ash wood accent color for highlight touches"
+  dont:
+    - "Use heavy shadows"
+    - "Overcrowd the layout with details"

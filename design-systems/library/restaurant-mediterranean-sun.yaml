@@ -1,0 +1,83 @@
+slug: restaurant-mediterranean-sun
+name: Mediterranean Sun
+school: playful-warm
+is_school: false
+description: "Inspired by Greek shores, terracotta roofs, and fresh olive oils. Ideal for tavernas and fresh bistros."
+tags:
+  - "restaurant"
+  - "coastal"
+  - "warm"
+  - "mediterranean"
+  - "playful"
+palette:
+  background: "#FFFDF9"
+  surface: "#FAF5EC"
+  ink: "#2B2119"
+  body: "#4E3E33"
+  muted: "#8F7D70"
+  hairline: "#ECDDC5"
+  accent: "#006AA6"
+typography:
+  family_primary: Outfit
+  family_secondary: Inter
+  numeric: lining-nums
+  scale:
+    display:
+      size: 56
+      weight: 600
+      tracking: -0.8
+    heading:
+      size: 26
+      weight: 600
+      tracking: -0.2
+    body:
+      size: 16
+      weight: 400
+      tracking: 0
+    label:
+      size: 13
+      weight: 600
+      tracking: 0.5
+      uppercase: false
+spacing:
+  base: 8
+  scale:
+    xs: 8
+    sm: 16
+    md: 24
+    lg: 40
+    xl: 64
+    hero: 96
+radius:
+  sm: 6
+  md: 12
+  lg: 20
+motion:
+  duration:
+    base: 260
+  easing:
+    standard: "cubic-bezier(0.34, 1.56, 0.64, 1)"
+components:
+  buttons:
+    shape: rounded
+    variants:
+      primary:
+        bg: accent
+        fg: background
+      secondary:
+        bg: background
+        fg: ink
+        border:
+          width: 1
+          color: hairline
+  cards:
+    radius: lg
+    border: hairline
+    bg: surface
+rules:
+  do:
+    - "Utilize organic blobs or warm illustrative patterns"
+    - "Set headings with the Outfit display font"
+  dont:
+    - "Use strict high-tech lines"
+    - "Use pure pitch black background"
