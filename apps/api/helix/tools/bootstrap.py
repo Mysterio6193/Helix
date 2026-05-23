@@ -26,6 +26,7 @@ from helix.tools.adapters.productivity import (
     NotionApiTool,
     WebSearchTool,
 )
+from helix.tools.adapters.browser_automation import BrowserUseTool, StagehandTool
 from helix.tools.adapters.storage import PgvectorMemoryTool, S3StorageTool
 from helix.tools.registry import clear_registry, list_tools, register_tool
 
@@ -55,6 +56,9 @@ _BUILTINS = (
     # Storage / memory
     S3StorageTool,
     PgvectorMemoryTool,
+    # Browser Automation
+    BrowserUseTool,
+    StagehandTool,
 )
 
 
