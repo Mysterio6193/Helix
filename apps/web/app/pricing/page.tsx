@@ -77,8 +77,11 @@ export default function PricingPage() {
   const inner = (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold tracking-tight">
-          Pricing built for creative teams
+        <h1 className="font-display text-[clamp(2.2rem,4.5vw,3.6rem)] font-light leading-[1.04] tracking-[-0.025em] text-balance">
+          Pricing built for{" "}
+          <span className="font-display-italic text-gradient-signature font-normal">
+            creative teams
+          </span>
         </h1>
         <p className="mt-3 text-lg text-muted-foreground">
           Start free. Upgrade when your brand needs more horsepower.

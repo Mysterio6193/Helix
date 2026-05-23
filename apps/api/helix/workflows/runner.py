@@ -27,7 +27,7 @@ log = get_logger(__name__)
 
 # Slice-name -> async callable that builds + invokes the LangGraph and returns
 # the final HelixState dict.
-WorkflowExecutor = Callable[[HelixState], Awaitable[HelixState]]
+WorkflowExecutor = Callable[[HelixState, dict], Awaitable[HelixState]]
 _WORKFLOWS: dict[str, WorkflowExecutor] = {}
 
 
@@ -81,7 +81,11 @@ async def execute_run(ctx: RunContext) -> HelixState:
     # Execute workflow graph
     error: str | None = None
     try:
-        state = await executor(state)
+        config = {"configurable": {"thread_id": str(ctx.run_id)}}
+        # Let the executor handle resume logic internally or here?
+        # Actually, if we pass state=None, ainvoke will just resume.
+        # But we need to do it at the executor level, or we just pass the initial state and executor decides.
+        state = await executor(state, config)
     except Exception as exc:
         log.exception("workflow_execution_failed", workflow=ctx.workflow)
         error = f"{type(exc).__name__}: {exc}"

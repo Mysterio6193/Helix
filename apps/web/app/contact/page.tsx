@@ -91,9 +91,9 @@ export default function ContactPage() {
                 <Mail size={11} />
                 Contact
               </span>
-              <h1 className="mt-7 text-[clamp(2.2rem,4.5vw,3.6rem)] font-bold leading-[1.05] tracking-tight">
+              <h1 className="font-display mt-7 text-[clamp(2.2rem,4.5vw,3.8rem)] font-light leading-[1.04] tracking-[-0.025em] text-balance">
                 Talk to a human about{" "}
-                <span className="bg-gradient-to-r from-[#ff6a4d] via-[#ff3d7f] to-[#a24bff] bg-clip-text text-transparent">
+                <span className="font-display-italic text-gradient-signature font-normal">
                   Helix
                 </span>
                 .

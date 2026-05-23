@@ -6,6 +6,7 @@ import useSWR from "swr";
 
 import { Badge, statusTone } from "@/components/ui/badge";
 import { Card, CardSubtitle, CardTitle } from "@/components/ui/card";
+import { AgentTimeline } from "@/components/workflow/agent-timeline";
 import { GraphViz } from "@/components/workflow/graph-viz";
 import { RunStream } from "@/components/workflow/run-stream";
 import { api, type RunDetail } from "@/lib/api";
@@ -63,6 +64,10 @@ export default function RunDetailPage({ params }: PageProps) {
 
       {run && (
         <GraphViz runId={runId} workflowSlice={run.workflow} />
+      )}
+
+      {run?.state?.steps && (run.state.steps as any[]).length > 0 && (
+        <AgentTimeline run={run} />
       )}
 
       <RunStream runId={runId} />

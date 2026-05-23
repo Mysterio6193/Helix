@@ -68,9 +68,9 @@ export default function AboutPage() {
             <Sparkles size={11} />
             About Helix
           </span>
-          <h1 className="mt-7 text-[clamp(2.4rem,5vw,4.2rem)] font-bold leading-[1.04] tracking-tight">
+          <h1 className="font-display mt-7 text-[clamp(2.4rem,5vw,4.6rem)] font-light leading-[1.02] tracking-[-0.025em] text-balance">
             We are building the{" "}
-            <span className="bg-gradient-to-r from-[#ff6a4d] via-[#ff3d7f] to-[#a24bff] bg-clip-text text-transparent">
+            <span className="font-display-italic text-gradient-signature font-normal">
               creative operating system
             </span>{" "}
             for the next era of brands.
@@ -200,7 +200,7 @@ export default function AboutPage() {
 
       {/* Final CTA */}
       <section className="max-w-5xl mx-auto px-6 sm:px-8 py-24 text-center">
-        <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-bold tracking-tight leading-[1.05]">
+        <h2 className="font-display text-[clamp(2rem,4vw,3.6rem)] font-light tracking-[-0.022em] leading-[1.04] text-balance">
           Run brand and creative on one operating system.
         </h2>
         <p className="mt-5 mx-auto max-w-xl text-[15px] leading-relaxed text-[var(--color-slate)]">

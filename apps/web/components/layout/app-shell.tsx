@@ -27,6 +27,7 @@ import useSWR from "swr";
 
 import { api, type AuthUser, type RunSummary } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { WorkspaceSwitcher } from "./workspace-switcher";
 
 interface NavItem {
   href: string;
@@ -412,6 +413,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Live activity */}
         <LiveActivity />
+
+        {/* Workspace Switcher */}
+        <WorkspaceSwitcher />
 
         {/* User footer */}
         <UserFooter />

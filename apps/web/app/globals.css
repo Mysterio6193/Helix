@@ -92,9 +92,22 @@
 
   /* ---------- Typography ---------- */
   --font-sans:
-    "DM Sans", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    var(--font-dm-sans), "DM Sans", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display:
+    var(--font-display), "Fraunces", "Cormorant Garamond", "Bodoni Moda",
+    Didot, "Playfair Display", ui-serif, Georgia, serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
+
+  /* ---------- Signature accents (warm refined palette) ---------- */
+  --color-signature: #f0734a;
+  --color-signature-deep: #c8501f;
+  --color-signature-soft: #ffb98a;
+  --color-cream: #f7f1e8;
+  --color-cream-dim: #d9cfbf;
+  --color-ivory: #faf5ec;
+  --gradient-signature: linear-gradient(135deg, #f0734a 0%, #d44a1a 100%);
+  --gradient-signature-soft: linear-gradient(135deg, #ffb98a 0%, #f0734a 100%);
 }
 
 @theme inline {
@@ -132,8 +145,66 @@
   --shadow-floating: 0 12px 40px rgba(0, 0, 0, 0.6);
   --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.8);
 
-  --font-sans: "DM Sans", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-dm-sans), "DM Sans", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-display), "Fraunces", "Bodoni Moda", Didot, ui-serif, Georgia, serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  --color-signature: #f0734a;
+  --color-signature-deep: #c8501f;
+  --color-signature-soft: #ffb98a;
+  --color-cream: #f7f1e8;
+  --color-cream-dim: #d9cfbf;
+  --color-ivory: #faf5ec;
+}
+
+/* ============================================================
+   Premium display utilities
+   ============================================================ */
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01", "ss02", "liga", "kern";
+  letter-spacing: -0.01em;
+}
+.font-display-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-feature-settings: "ss01", "ss02", "liga", "kern";
+}
+.text-signature {
+  color: var(--color-signature);
+}
+.text-cream {
+  color: var(--color-cream);
+}
+.bg-signature {
+  background: var(--color-signature);
+}
+.bg-cream {
+  background: var(--color-cream);
+}
+.border-signature {
+  border-color: var(--color-signature);
+}
+.text-gradient-signature {
+  background: linear-gradient(135deg, #ffb98a 0%, #f0734a 50%, #d44a1a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-balance {
+  text-wrap: balance;
+}
+.text-pretty {
+  text-wrap: pretty;
+}
+.hairline-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(240, 115, 74, 0.35) 50%,
+    transparent 100%
+  );
 }
 
 /* ============================================================

@@ -39,8 +39,12 @@ export default function ChangelogPage() {
             <GitCommit size={11} />
             Changelog
           </span>
-          <h1 className="mt-7 text-[clamp(2.2rem,4.5vw,3.6rem)] font-bold leading-[1.05] tracking-tight">
-            What we&apos;ve shipped.
+          <h1 className="font-display mt-7 text-[clamp(2.2rem,4.5vw,3.8rem)] font-light leading-[1.04] tracking-[-0.025em] text-balance">
+            What we&apos;ve{" "}
+            <span className="font-display-italic text-gradient-signature font-normal">
+              shipped
+            </span>
+            .
           </h1>
           <p className="mt-6 mx-auto max-w-xl text-[15px] leading-relaxed text-[var(--color-slate)]">
             Real releases, not coming-soon promises. Each entry corresponds to
@@ -103,7 +107,7 @@ export default function ChangelogPage() {
       </section>
 
       <section className="max-w-4xl mx-auto px-6 sm:px-8 py-20 text-center">
-        <h2 className="text-[clamp(1.6rem,3.5vw,2.4rem)] font-bold tracking-tight leading-[1.1]">
+        <h2 className="font-display text-[clamp(1.8rem,3.5vw,2.6rem)] font-light tracking-[-0.022em] leading-[1.08] text-balance">
           See what&apos;s next on the roadmap.
         </h2>
         <p className="mt-4 mx-auto max-w-md text-[14px] text-[var(--color-slate)]">

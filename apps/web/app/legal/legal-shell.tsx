@@ -18,7 +18,7 @@ export function LegalShell(props: {
           <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--color-stone)]">
             {props.eyebrow}
           </span>
-          <h1 className="mt-4 text-[clamp(2rem,4vw,3rem)] font-bold tracking-tight leading-[1.1]">
+          <h1 className="font-display mt-4 text-[clamp(2rem,4vw,3.2rem)] font-light tracking-[-0.025em] leading-[1.05] text-balance">
             {props.title}
           </h1>
           <p className="mt-4 text-[13px] text-[var(--color-slate)]">

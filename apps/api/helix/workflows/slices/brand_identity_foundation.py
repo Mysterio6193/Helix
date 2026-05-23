@@ -190,15 +190,32 @@ def _build_graph():
     g.add_edge("revise_copy", "critique")
     g.add_edge("revise_visuals", "critique")
     g.add_edge("finalize", END)
-    return g.compile()
+    return g
 
 
-_GRAPH = _build_graph()
+_GRAPH_UNCOMPILED = _build_graph()
+_GRAPH_COMPILED = None
 
 
-async def execute(state: HelixState) -> HelixState:
+async def execute(state: HelixState, config: dict | None = None) -> HelixState:
     """Run the compiled graph and return the final state dict."""
-    final = await _GRAPH.ainvoke(state)
+    global _GRAPH_COMPILED
+    if _GRAPH_COMPILED is None:
+        from helix.workflows.checkpointer import checkpointer
+        _GRAPH_COMPILED = _GRAPH_UNCOMPILED.compile(checkpointer=checkpointer)
+        
+    cfg = config or {}
+    
+    # Check if we are resuming an existing run
+    if cfg:
+        snapshot = await _GRAPH_COMPILED.aget_state(cfg)
+        if snapshot and snapshot.next:
+            # We have a pending snapshot with next nodes to run. Resume.
+            final = await _GRAPH_COMPILED.ainvoke(None, config=cfg)
+            return final  # type: ignore[return-value]
+
+    # Fresh run or forced restart
+    final = await _GRAPH_COMPILED.ainvoke(state, config=cfg)
     return final  # type: ignore[return-value]
 
 

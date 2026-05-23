@@ -53,6 +53,68 @@ export interface Page<T> {
   offset: number;
 }
 
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  metadata?: Record<string, any>;
+  created_at?: string;
+}
+
+export interface Workspace {
+  id: string;
+  organization_id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  settings?: Record<string, any>;
+  created_at?: string;
+}
+
+export interface AgentSession {
+  id: string;
+  workspace_id: string;
+  brand_id?: string | null;
+  agent: string;
+  name: string;
+  description?: string | null;
+  status: string;
+  mode: string;
+  goal?: string | null;
+  config?: Record<string, any>;
+  memory?: Record<string, any>;
+  heartbeat_interval_s: number;
+  last_heartbeat_at?: string | null;
+  last_active_at?: string | null;
+  error?: string | null;
+  created_at?: string;
+}
+
+export interface ScheduledJob {
+  id: string;
+  workspace_id: string;
+  session_id?: string | null;
+  name: string;
+  workflow: string;
+  cron?: string | null;
+  interval_s?: number | null;
+  enabled: boolean;
+  next_run_at?: string | null;
+  created_at?: string;
+}
+
+export interface Trigger {
+  id: string;
+  workspace_id: string;
+  session_id?: string | null;
+  name: string;
+  source: string;
+  event_kind?: string | null;
+  workflow: string;
+  enabled: boolean;
+  created_at?: string;
+}
+
 export interface Brand {
   id: string;
   name: string;
@@ -243,6 +305,35 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ email, name }),
       }),
+  },
+  organizations: {
+    me: () => request<Organization>("/organizations/me"),
+    get: (id: string) => request<Organization>(`/organizations/${id}`),
+  },
+  workspaces: {
+    list: () =>
+      request<Page<Workspace>>("/workspaces").then((p) => p.items),
+    get: (id: string) => request<Workspace>(`/workspaces/${id}`),
+    create: (w: Partial<Workspace>) =>
+      request<Workspace>("/workspaces", { method: "POST", body: JSON.stringify(w) }),
+    update: (id: string, w: Partial<Workspace>) =>
+      request<Workspace>(`/workspaces/${id}`, { method: "PATCH", body: JSON.stringify(w) }),
+    delete: (id: string) => request<void>(`/workspaces/${id}`, { method: "DELETE" }),
+  },
+  sessions: {
+    list: (params?: { workspace_id?: string; limit?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.workspace_id) q.set("workspace_id", params.workspace_id);
+      if (params?.limit) q.set("limit", String(params.limit));
+      const qs = q.toString();
+      return request<Page<AgentSession>>(`/agent-sessions${qs ? `?${qs}` : ""}`).then(p => p.items);
+    },
+    get: (id: string) => request<AgentSession>(`/agent-sessions/${id}`),
+    create: (payload: Partial<AgentSession>) =>
+      request<AgentSession>("/agent-sessions", { method: "POST", body: JSON.stringify(payload) }),
+    update: (id: string, payload: Partial<AgentSession>) =>
+      request<AgentSession>(`/agent-sessions/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    delete: (id: string) => request<void>(`/agent-sessions/${id}`, { method: "DELETE" }),
   },
   brands: {
     list: () =>

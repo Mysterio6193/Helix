@@ -95,9 +95,9 @@ export default function SecurityPage() {
             <ShieldCheck size={11} />
             Security
           </span>
-          <h1 className="mt-7 text-[clamp(2.2rem,4.5vw,3.6rem)] font-bold leading-[1.05] tracking-tight">
+          <h1 className="font-display mt-7 text-[clamp(2.2rem,4.5vw,4rem)] font-light leading-[1.03] tracking-[-0.025em] text-balance">
             Your brand, your data, your{" "}
-            <span className="bg-gradient-to-r from-[#4d7bff] via-[#a24bff] to-[#ff3d7f] bg-clip-text text-transparent">
+            <span className="font-display-italic text-gradient-signature font-normal">
               keys
             </span>
             .
@@ -172,7 +172,7 @@ export default function SecurityPage() {
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--color-stone)]">
                 Responsible disclosure
               </span>
-              <h2 className="mt-3 text-[clamp(1.6rem,3vw,2rem)] font-bold tracking-tight leading-tight">
+              <h2 className="font-display mt-3 text-[clamp(1.6rem,3vw,2.2rem)] font-light tracking-[-0.018em] leading-[1.1] text-balance">
                 Found something? Tell us.
               </h2>
               <p className="mt-4 text-[14px] text-[var(--color-slate)] max-w-xl">

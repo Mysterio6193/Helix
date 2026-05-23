@@ -25,6 +25,7 @@ from helix.core.logging import configure_logging, get_logger
 from helix.design_systems import sync_design_systems
 from helix.skills.loader import sync_registry as sync_skills
 from helix.tools.bootstrap import bootstrap_tools
+from helix.workers.sweeper import run_sweeper
 from helix.workflows.runner import execute_run
 from helix.workflows.state import RunContext
 
@@ -171,6 +172,13 @@ async def main() -> None:
     # Bootstrap registries (tools, agents, skills, design systems)
     bootstrap_tools(reset=True)
     bootstrap_agents()
+    
+    from helix.workflows.checkpointer import setup_checkpointer, close_checkpointer
+    try:
+        await setup_checkpointer()
+    except Exception:
+        log.exception("worker.checkpointer_setup_failed")
+
     try:
         await sync_skills()
     except Exception:
@@ -221,8 +229,9 @@ async def main() -> None:
         max_retries=settings.worker_max_retries,
     )
 
-    # Start delayed drain coroutine
+    # Start delayed drain and sweeper coroutines
     drain_task = asyncio.create_task(_drain_delayed(client))
+    sweeper_task = asyncio.create_task(run_sweeper(_shutdown))
 
     # Track in-flight tasks for graceful shutdown
     in_flight: set[asyncio.Task] = set()
@@ -259,10 +268,11 @@ async def main() -> None:
     log.info("worker.draining", in_flight=len(in_flight))
     worker_state.ready = False
 
-    # Cancel delayed drain
+    # Cancel delayed drain and sweeper
     drain_task.cancel()
+    sweeper_task.cancel()
     try:
-        await drain_task
+        await asyncio.gather(drain_task, sweeper_task, return_exceptions=True)
     except asyncio.CancelledError:
         pass
 
@@ -285,6 +295,7 @@ async def main() -> None:
     # Cleanup
     await client.aclose()
     await health_runner.cleanup()
+    await close_checkpointer()
     log.info("worker.stopped", processed=worker_state.processed, failed=worker_state.failed)
 
 

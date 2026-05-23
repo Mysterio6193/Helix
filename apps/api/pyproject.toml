@@ -37,6 +37,8 @@ dependencies = [
     "aiohttp>=3.9.0",
     "prometheus-client>=0.20.0",
     "stripe>=10.0.0",
+    "langgraph-checkpoint-postgres>=1.0.9",
+    "psycopg[binary]>=3.3.4",
 ]
 
 

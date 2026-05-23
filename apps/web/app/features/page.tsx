@@ -298,7 +298,7 @@ export default function FeaturesPage() {
           <Sparkles size={11} />
           <span>Features</span>
         </div>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.04] max-w-3xl mx-auto">
+        <h1 className="font-display text-4xl sm:text-6xl md:text-[80px] font-light tracking-[-0.025em] text-white leading-[1.02] max-w-3xl mx-auto text-balance">
           Everything Helix does — under the hood.
         </h1>
         <p className="text-[16px] sm:text-[17px] text-[var(--color-slate)] leading-relaxed max-w-2xl mx-auto">
@@ -396,7 +396,7 @@ export default function FeaturesPage() {
                     {s.eyebrow}
                   </span>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight max-w-xl">
+                <h2 className="font-display text-3xl sm:text-5xl font-light tracking-[-0.018em] text-white leading-[1.05] max-w-xl text-balance">
                   {s.title}
                 </h2>
                 <p className="text-[15px] text-[var(--color-slate)] leading-relaxed max-w-xl">
@@ -466,7 +466,7 @@ export default function FeaturesPage() {
           <p className="text-[11px] font-bold uppercase tracking-widest text-purple-300">
             Platform
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+          <h2 className="font-display text-3xl sm:text-5xl font-light tracking-[-0.018em] text-white text-balance">
             Built on durable primitives.
           </h2>
           <p className="text-[15px] text-[var(--color-slate)] leading-relaxed">
@@ -501,7 +501,7 @@ export default function FeaturesPage() {
       <section className="relative max-w-7xl mx-auto w-full px-6 sm:px-8 py-20 md:py-24">
         <div className="relative rounded-3xl border border-white/[0.06] bg-gradient-to-br from-[#13141a] via-[#0d0e12] to-[#0a0b0e] p-10 md:p-16 text-center">
           <div className="space-y-5 max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white">
+            <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light tracking-[-0.022em] text-white leading-[1.05] text-balance">
               Ready to spin up your first brand?
             </h2>
             <p className="text-[15px] text-[var(--color-slate)] leading-relaxed">

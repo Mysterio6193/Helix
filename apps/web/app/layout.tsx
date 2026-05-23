@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { DM_Sans, Fraunces } from "next/font/google";
 
 import "./globals.css";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { CommandPaletteProvider } from "@/components/ui/command-palette";
+import { WorkspaceProvider } from "@/lib/workspace-context";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
   display: "swap",
   weight: ["400", "500", "600", "700"],
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+  style: ["normal", "italic"],
+  axes: ["SOFT", "opsz"],
 });
 
 export const metadata: Metadata = {
@@ -25,10 +34,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={dmSans.variable}>
+    <html lang="en" className={`${dmSans.variable} ${fraunces.variable}`}>
       <body>
         <CommandPaletteProvider>
-          <AppShell>{children}</AppShell>
+          <WorkspaceProvider>
+            <AppShell>{children}</AppShell>
+          </WorkspaceProvider>
         </CommandPaletteProvider>
       </body>
     </html>

@@ -387,20 +387,22 @@ export function GuestLanding() {
           transition={{ duration: 0.55 }}
           className="lg:col-span-6 space-y-7"
         >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[rgba(162,75,255,0.08)] border border-[rgba(162,75,255,0.18)] text-[10px] text-purple-300 font-bold uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[rgba(240,115,74,0.06)] border border-[rgba(240,115,74,0.22)] text-[10px] text-[var(--color-signature)] font-semibold uppercase tracking-[0.18em]">
             <Sparkles className="size-3" />
             <span>The creative OS for restaurants & food brands</span>
           </div>
 
-          <h1 className="text-[40px] sm:text-[56px] lg:text-[64px] font-bold tracking-tight text-white leading-[1.04]">
+          <h1 className="font-display text-[44px] sm:text-[60px] lg:text-[72px] font-light tracking-[-0.02em] text-white leading-[1.02] text-balance">
             Run brand, creative, and{" "}
-            <span className="bg-gradient-to-r from-[#ff6a4d] via-[#a24bff] to-[#4d7bff] bg-clip-text text-transparent">
+            <span className="font-display-italic text-gradient-signature font-normal">
               campaigns
             </span>{" "}
             from one OS.
           </h1>
 
-          <p className="text-[17px] leading-relaxed text-[var(--color-slate)] max-w-[52ch]">
+          <div className="hairline-divider w-24" aria-hidden />
+
+          <p className="text-[17px] leading-[1.7] text-[var(--color-slate)] max-w-[52ch] text-pretty">
             Helix turns a brief into a complete brand system, packaging
             artwork, a website on Vercel, social content, and a launch
             campaign — all wired together with a per-brand memory.
@@ -462,10 +464,10 @@ export function GuestLanding() {
       >
         <Reveal>
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-purple-300">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-signature)]">
               Capabilities
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+            <h2 className="font-display text-3xl sm:text-5xl font-light tracking-[-0.015em] text-white text-balance">
               Six workflows, one connected brain.
             </h2>
             <p className="text-[15px] text-[var(--color-slate)] leading-relaxed">
@@ -519,10 +521,10 @@ export function GuestLanding() {
       <section className="relative max-w-7xl mx-auto w-full px-6 sm:px-8 py-16 md:py-24 border-t border-white/[0.04]">
         <Reveal>
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-14">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-purple-300">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-signature)]">
               How it&apos;s different
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+            <h2 className="font-display text-3xl sm:text-5xl font-light tracking-[-0.015em] text-white text-balance">
               Built like an operating system, not a tool.
             </h2>
           </div>
@@ -565,10 +567,10 @@ export function GuestLanding() {
       <section className="relative max-w-7xl mx-auto w-full px-6 sm:px-8 py-16 md:py-24 border-t border-white/[0.04]">
         <Reveal>
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-14">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-purple-300">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-signature)]">
               How it works
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+            <h2 className="font-display text-3xl sm:text-5xl font-light tracking-[-0.015em] text-white text-balance">
               From brief to launch in three moves.
             </h2>
           </div>
@@ -598,10 +600,10 @@ export function GuestLanding() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <Reveal className="lg:col-span-5">
             <div className="space-y-5">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-purple-300">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-signature)]">
                 Inside Helix
               </p>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+              <h2 className="font-display text-3xl sm:text-5xl font-light tracking-[-0.015em] text-white leading-[1.05] text-balance">
                 Every surface you need, in one workspace.
               </h2>
               <p className="text-[15px] text-[var(--color-slate)] leading-relaxed">
@@ -657,7 +659,7 @@ export function GuestLanding() {
               <Zap size={11} className="text-[#ff6a4d]" />
               <span>Free tier — no card required</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
+            <h2 className="font-display text-3xl sm:text-5xl md:text-6xl font-light tracking-[-0.02em] text-white leading-[1.04] text-balance">
               Spin up your first brand in a few minutes.
             </h2>
             <p className="text-[15px] text-[var(--color-slate)] leading-relaxed">
