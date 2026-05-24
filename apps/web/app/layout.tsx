@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({
             <AppShell>{children}</AppShell>
           </WorkspaceProvider>
         </CommandPaletteProvider>
+        <Analytics />
       </body>
     </html>
   );
