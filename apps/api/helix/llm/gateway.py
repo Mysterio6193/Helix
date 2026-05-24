@@ -165,6 +165,10 @@ async def complete(
         return await _dashscope_chat(
             spec, key, prompt, messages, system, temperature, max_tokens
         )
+    if spec.provider == "xai":
+        return await _xai_chat(
+            spec, key, prompt, messages, system, temperature, max_tokens, json_mode
+        )
     raise GatewayError(f"unsupported provider for chat: {spec.provider}")
 
 
@@ -210,6 +214,10 @@ async def stream_complete(
         return
     if spec.provider == "dashscope":
         async for chunk in _dashscope_stream(spec, key, prompt, messages, system, temperature, max_tokens):
+            yield chunk
+        return
+    if spec.provider == "xai":
+        async for chunk in _xai_stream(spec, key, prompt, messages, system, temperature, max_tokens):
             yield chunk
         return
     raise GatewayError(f"streaming not supported for provider {spec.provider}")
@@ -972,3 +980,87 @@ async def _mistral_chat(
         text=text, model=spec.model, provider=spec.provider,
         prompt_tokens=p, completion_tokens=c, cost_usd=cost,
     )
+
+
+# ---------------------------------------------------------------------------
+# xAI Grok (OpenAI-compatible SDK implementation)
+# ---------------------------------------------------------------------------
+async def _xai_chat(
+    spec: ModelSpec,
+    key: str,
+    prompt: str | None,
+    messages: list[dict[str, Any]] | None,
+    system: str | None,
+    temperature: float,
+    max_tokens: int,
+    json_mode: bool,
+) -> ChatResult:
+    from openai import AsyncOpenAI
+
+    client = AsyncOpenAI(api_key=key, base_url="https://api.x.ai/v1")
+    msgs: list[dict[str, Any]] = []
+    if system:
+        msgs.append({"role": "system", "content": system})
+    if messages:
+        msgs.extend(messages)
+    elif prompt:
+        msgs.append({"role": "user", "content": prompt})
+
+    kwargs: dict[str, Any] = {
+        "model": spec.model,
+        "messages": msgs,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    if json_mode and spec.supports_json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
+
+    resp = await client.chat.completions.create(**kwargs)
+    text = resp.choices[0].message.content or ""
+    usage = resp.usage
+    cost = (
+        _estimate_chat_cost(spec, usage.prompt_tokens or 0, usage.completion_tokens or 0)
+        if usage
+        else None
+    )
+    return ChatResult(
+        text=text,
+        model=spec.model,
+        provider=spec.provider,
+        prompt_tokens=getattr(usage, "prompt_tokens", None),
+        completion_tokens=getattr(usage, "completion_tokens", None),
+        cost_usd=cost,
+    )
+
+
+async def _xai_stream(
+    spec: ModelSpec,
+    key: str,
+    prompt: str | None,
+    messages: list[dict[str, Any]] | None,
+    system: str | None,
+    temperature: float,
+    max_tokens: int,
+) -> AsyncIterator[str]:
+    from openai import AsyncOpenAI
+
+    client = AsyncOpenAI(api_key=key, base_url="https://api.x.ai/v1")
+    msgs: list[dict[str, Any]] = []
+    if system:
+        msgs.append({"role": "system", "content": system})
+    if messages:
+        msgs.extend(messages)
+    elif prompt:
+        msgs.append({"role": "user", "content": prompt})
+
+    stream = await client.chat.completions.create(
+        model=spec.model,
+        messages=msgs,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        stream=True,
+    )
+    async for event in stream:
+        delta = event.choices[0].delta.content if event.choices else None
+        if delta:
+            yield delta

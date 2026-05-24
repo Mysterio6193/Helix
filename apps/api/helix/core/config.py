@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     mistral_api_key: str = ""
     dashscope_api_key: str = ""  # Alibaba Qwen via DashScope
+    xai_api_key: str = ""  # xAI Grok API key
 
     # Image / video providers
     replicate_api_token: str = ""

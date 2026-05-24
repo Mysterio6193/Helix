@@ -69,12 +69,13 @@ async def store_user_key(
     )
 
 
-@router.delete("/{provider}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{provider}")
 async def delete_user_key(
     provider: str,
     user: User = Depends(require_user),
     db: AsyncSession = Depends(get_db),
-) -> None:
+) -> dict[str, str]:
     deleted = await byok_service.delete_key(db, user.id, provider)
     if not deleted:
         raise HTTPException(status_code=404, detail="No key found for this provider")
+    return {"status": "deleted"}
