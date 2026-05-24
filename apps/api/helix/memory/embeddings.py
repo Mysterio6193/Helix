@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import hashlib
-from typing import Iterable
+from collections.abc import Iterable
 
 from helix.core.config import get_settings
 

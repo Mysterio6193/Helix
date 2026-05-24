@@ -9,7 +9,6 @@ from helix.models.design_system import DesignSystem
 from helix.skills.base import SkillContext, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
 
-
 SYSTEM_PROMPT = (
     "You are an art director choosing one of several pre-built visual schools "
     "to match a brand strategy. Return ONLY a JSON object: "

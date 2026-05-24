@@ -18,7 +18,7 @@ from helix.core.config import settings
 from helix.core.db import get_db
 from helix.core.sessions import require_user
 from helix.memory.brand_memory import load_brand_context
-from helix.models.brand import Brand, BrandAsset
+from helix.models.brand import BrandAsset
 from helix.models.organization import User
 from helix.models.skill import SkillLearning
 from helix.models.workflow import Asset, WorkflowRun
@@ -152,13 +152,13 @@ async def get_brand_timeline(
             .limit(limit)
         )
     ).scalars().all()
-    for l in learning_rows:
+    for row in learning_rows:
         timeline.append(
             {
                 "type": "learning",
-                "id": str(l.id),
-                "title": f"Learning · {(l.prompt_delta or l.trigger_context or '')[:80]}",
-                "at": l.created_at.isoformat() if l.created_at else None,
+                "id": str(row.id),
+                "title": f"Learning · {(row.prompt_delta or row.trigger_context or '')[:80]}",
+                "at": row.created_at.isoformat() if row.created_at else None,
             }
         )
 

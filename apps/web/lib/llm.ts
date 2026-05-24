@@ -47,6 +47,22 @@ export interface WorkspacePrefs {
   default_video_model: string | null;
 }
 
+export interface PlaygroundResult {
+  model: string;
+  provider: string;
+  display_name: string | null;
+  text: string;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  cost_usd: number | null;
+  latency_ms: number | null;
+  error: string | null;
+}
+
+export interface PlaygroundResponse {
+  results: PlaygroundResult[];
+}
+
 export interface CompleteResult {
   text: string;
   model: string;
@@ -65,6 +81,19 @@ export interface ImageGenItem {
 
 export interface ImageGenResult {
   images: ImageGenItem[];
+  model: string;
+  provider: string;
+  cost_usd: number | null;
+}
+
+export interface VideoGenItem {
+  s3_key: string;
+  duration_seconds: number;
+  source_url?: string | null;
+}
+
+export interface VideoGenResult {
+  videos: VideoGenItem[];
   model: string;
   provider: string;
   cost_usd: number | null;
@@ -121,6 +150,28 @@ export const llmApi = {
     n?: number;
   }) =>
     jsonFetch<ImageGenResult>("/llm/images", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  playground: (payload: {
+    models: string[];
+    prompt?: string;
+    messages?: Array<{ role: string; content: string }>;
+    system?: string;
+    temperature?: number;
+    max_tokens?: number;
+  }) =>
+    jsonFetch<PlaygroundResponse>("/llm/playground", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  videos: (payload: {
+    model?: string | null;
+    prompt: string;
+    duration_seconds?: number;
+    aspect_ratio?: string;
+  }) =>
+    jsonFetch<VideoGenResult>("/llm/videos", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

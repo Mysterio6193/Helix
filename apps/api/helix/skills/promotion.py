@@ -7,14 +7,12 @@ under `skills/_specializations/<skill>_<brand_slug>/SKILL.md` using LLM synthesi
 """
 from __future__ import annotations
 
-import os
-import yaml
 import json
 import uuid
 from pathlib import Path
 from typing import Any
 
-import sqlalchemy as sa
+import yaml
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,7 +59,7 @@ async def promote_specialization(
         .where(
             SkillLearning.brand_id == brand_id,
             SkillLearning.skill_id == parent_skill.id,
-            SkillLearning.enabled == True
+            SkillLearning.enabled is True
         )
     )
     learnings = list(learnings_res.scalars().all())
@@ -69,7 +67,7 @@ async def promote_specialization(
         return None
 
     count = len(learnings)
-    scores = [l.score for l in learnings if l.score is not None]
+    scores = [item.score for item in learnings if item.score is not None]
     avg_score = sum(scores) / len(scores) if scores else 0.0
 
     log.info(
@@ -103,7 +101,7 @@ async def promote_specialization(
     }
 
     # Extract prompt deltas to inject
-    deltas = [l.prompt_delta for l in learnings if l.prompt_delta]
+    deltas = [item.prompt_delta for item in learnings if item.prompt_delta]
     deltas_str = "\n".join(f"- {d.strip()}" for d in deltas)
 
     # 6. Perform synthesis using LLM or offline fallback
@@ -215,7 +213,7 @@ Respond ONLY with valid JSON. Do not include markdown blocks like ```json or any
         if not instructions:
             raise ValueError("Empty instructions from LLM")
         return desc, instructions
-    except Exception as exc:
+    except Exception:
         log.exception("promote.llm_synthesis_failed_falling_back_to_offline")
         # Deterministic fallback logic
         desc = f"Specialized brand variant of {parent_skill.name} tailored for {brand.name}."

@@ -9,8 +9,8 @@ import importlib
 import pkgutil
 import sys
 import uuid
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import frontmatter
 from sqlalchemy import select
@@ -173,12 +173,12 @@ async def sync_registry(db: AsyncSession | None = None, reload_handlers: bool = 
 
 if __name__ == "__main__":  # pragma: no cover
     import asyncio
+
     from helix.core.db import AsyncSessionLocal
 
     async def _main() -> None:
         async with AsyncSessionLocal() as db:
-            counts = await sync_registry(db)
+            await sync_registry(db)
             await db.commit()
-            print(counts)
 
     asyncio.run(_main())

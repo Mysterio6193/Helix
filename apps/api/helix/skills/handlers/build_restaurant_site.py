@@ -18,7 +18,6 @@ from typing import Any
 from helix.skills.base import SkillContext, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
 
-
 # ---------------------------------------------------------------------------
 # 1. Section copy generation
 # ---------------------------------------------------------------------------
@@ -507,6 +506,232 @@ def _render_all_files(
 
 
 # ---------------------------------------------------------------------------
+def _render_preview_html(
+    *,
+    brand_name: str,
+    tagline: str | None,
+    design_system: dict,
+    sections: dict,
+) -> str:
+    tokens = _tokens(design_system)
+    
+    def esc(s: Any) -> str:
+        if s is None:
+            return ""
+        return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+    font_family = tokens.get("font_family", "DM Sans")
+    font_link = f"https://fonts.googleapis.com/css2?family={font_family.replace(' ', '+')}:wght@300;400;500;600;700&display=swap"
+
+    hero = sections.get("hero") or {}
+    about = sections.get("about") or {}
+    menu_teaser = sections.get("menu_teaser") or {}
+    visit = sections.get("visit") or {}
+    contact = sections.get("contact") or {}
+    footer = sections.get("footer") or {}
+
+    menu_items_html = ""
+    for item in menu_teaser.get("items") or []:
+        menu_items_html += f"""
+        <div class="flex flex-col border-b border-[color:var(--color-hairline)] pb-6 last:border-0">
+          <div class="flex justify-between items-baseline mb-2">
+            <h3 class="text-xl font-bold tracking-tight text-[color:var(--color-ink)]">{esc(item.get('name'))}</h3>
+            <span class="text-lg font-bold font-mono text-[color:var(--color-accent)]">{esc(item.get('price'))}</span>
+          </div>
+          <p class="text-sm text-[color:var(--color-ink)]/70 max-w-[50ch]">{esc(item.get('blurb'))}</p>
+        </div>
+        """
+
+    addr_html = "".join(f"<p class='text-sm text-[color:var(--color-ink)]/80'>{esc(line)}</p>" for line in visit.get("address_lines") or [])
+    
+    hours_html = "".join(f"<div class='flex justify-between py-2 border-b border-[color:var(--color-hairline)]/50 last:border-0'><span class='text-sm font-medium text-[color:var(--color-ink)]/70'>{esc(h.get('day'))}</span><span class='text-sm text-[color:var(--color-ink)]/80'>{esc(h.get('hours'))}</span></div>" for h in visit.get("hours") or [])
+
+    about_paragraphs_html = "".join(f"<p class='text-base text-[color:var(--color-ink)]/80 leading-relaxed mb-6 last:mb-0'>{esc(p)}</p>" for p in about.get("paragraphs") or [])
+
+    return f"""<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{esc(brand_name)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{font_link}" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {{
+      --color-canvas: {tokens['canvas']};
+      --color-ink: {tokens['ink']};
+      --color-accent: {tokens['accent']};
+      --color-muted: {tokens['muted']};
+      --color-hairline: {tokens['hairline']};
+      --font-family: '{font_family}', sans-serif;
+    }}
+    
+    body {{
+      background-color: var(--color-canvas);
+      color: var(--color-ink);
+      font-family: var(--font-family);
+    }}
+  </style>
+  <script>
+    tailwind.config = {{
+      theme: {{
+        extend: {{
+          colors: {{
+            brand: {{
+              canvas: '{tokens['canvas']}',
+              ink: '{tokens['ink']}',
+              accent: '{tokens['accent']}',
+              muted: '{tokens['muted']}',
+              hairline: '{tokens['hairline']}',
+            }}
+          }}
+        }}
+      }}
+    }}
+  </script>
+</head>
+<body class="min-h-screen selection:bg-brand-accent selection:text-brand-canvas">
+
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-brand-canvas/80 border-b border-brand-hairline">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <a href="#" class="text-2xl font-bold tracking-tight text-brand-ink hover:opacity-90 transition-opacity">
+        {esc(brand_name)}
+      </a>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#about" class="text-sm font-medium text-brand-ink/80 hover:text-brand-ink transition-colors">About</a>
+        <a href="#menu" class="text-sm font-medium text-brand-ink/80 hover:text-brand-ink transition-colors">Menu</a>
+        <a href="#visit" class="text-sm font-medium text-brand-ink/80 hover:text-brand-ink transition-colors">Visit</a>
+        <a href="#contact" class="text-sm font-medium text-brand-ink/80 hover:text-brand-ink transition-colors">Contact</a>
+      </nav>
+      <a href="#visit" class="inline-flex h-10 items-center justify-center rounded-full bg-brand-ink px-6 text-sm font-medium text-brand-canvas hover:opacity-90 transition-all active:scale-95 shadow-sm">
+        Reserve Table
+      </a>
+    </div>
+  </header>
+
+  <section class="relative px-6 py-24 md:py-36 overflow-hidden flex flex-col items-center justify-center text-center">
+    <div class="max-w-4xl mx-auto space-y-8">
+      <div class="inline-flex px-4 py-1.5 rounded-full bg-brand-accent/10 border border-brand-accent/20 text-xs uppercase tracking-[2px] font-semibold text-brand-accent">
+        {esc(hero.get('eyebrow'))}
+      </div>
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] text-brand-ink">
+        {esc(hero.get('headline'))}
+      </h1>
+      <p class="text-lg md:text-xl text-brand-ink/80 max-w-[60ch] mx-auto leading-relaxed">
+        {esc(hero.get('subhead'))}
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        <a href="#menu" class="w-full sm:w-auto inline-flex h-12 items-center justify-center rounded-full bg-brand-accent px-8 text-base font-semibold text-brand-canvas hover:opacity-95 transition-all shadow-md hover:shadow-lg active:scale-95">
+          {esc(hero.get('primary_cta'))}
+        </a>
+        <a href="#visit" class="w-full sm:w-auto inline-flex h-12 items-center justify-center rounded-full border-2 border-brand-hairline px-8 text-base font-semibold text-brand-ink hover:bg-brand-muted transition-all active:scale-95">
+          {esc(hero.get('secondary_cta'))}
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="px-6 py-24 border-t border-brand-hairline bg-brand-muted/30">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div class="space-y-6">
+        <div class="text-xs uppercase tracking-[2px] font-bold text-brand-accent">{esc(about.get('eyebrow'))}</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-brand-ink leading-tight">{esc(about.get('headline'))}</h2>
+        <div class="prose max-w-none text-brand-ink/80">
+          {about_paragraphs_html}
+        </div>
+      </div>
+      <div class="relative aspect-video lg:aspect-square w-full rounded-3xl overflow-hidden bg-brand-muted border border-brand-hairline flex items-center justify-center shadow-lg">
+        <div class="absolute inset-0 bg-gradient-to-tr from-brand-accent/20 to-brand-canvas opacity-40"></div>
+        <div class="z-10 text-center p-8 space-y-3">
+          <div class="inline-flex p-3 rounded-full bg-brand-canvas/90 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-accent"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-brand-ink">{esc(brand_name)}</h3>
+          <p class="text-xs text-brand-ink/60 uppercase tracking-[1px]">{esc(tagline)}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="menu" class="px-6 py-24 border-t border-brand-hairline">
+    <div class="max-w-4xl mx-auto space-y-16">
+      <div class="text-center space-y-4">
+        <div class="text-xs uppercase tracking-[2px] font-bold text-brand-accent">{esc(menu_teaser.get('eyebrow'))}</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-brand-ink">{esc(menu_teaser.get('headline'))}</h2>
+      </div>
+      
+      <div class="space-y-8 bg-brand-muted/20 border border-brand-hairline p-8 md:p-12 rounded-3xl">
+        {menu_items_html}
+      </div>
+    </div>
+  </section>
+
+  <section id="visit" class="px-6 py-24 border-t border-brand-hairline bg-brand-muted/30">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <div class="space-y-6">
+        <div class="text-xs uppercase tracking-[2px] font-bold text-brand-accent">{esc(visit.get('eyebrow'))}</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-brand-ink leading-tight">{esc(visit.get('headline'))}</h2>
+        <div class="p-8 bg-brand-canvas border border-brand-hairline rounded-3xl space-y-4 shadow-sm">
+          <div class="text-xs uppercase tracking-[1px] text-brand-ink/50 font-bold">Location</div>
+          {addr_html}
+        </div>
+      </div>
+      <div class="flex flex-col justify-between p-8 md:p-12 bg-brand-canvas border border-brand-hairline rounded-3xl shadow-sm">
+        <div class="space-y-6">
+          <div class="text-xs uppercase tracking-[2px] font-bold text-brand-accent">Opening Hours</div>
+          <div class="divide-y divide-brand-hairline">
+            {hours_html}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="px-6 py-24 border-t border-brand-hairline">
+    <div class="max-w-4xl mx-auto text-center space-y-12">
+      <div class="space-y-4">
+        <div class="text-xs uppercase tracking-[2px] font-bold text-brand-accent">{esc(contact.get('eyebrow'))}</div>
+        <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-brand-ink">{esc(contact.get('headline'))}</h2>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <a href="mailto:{esc(contact.get('email'))}" class="p-6 bg-brand-muted/30 border border-brand-hairline rounded-2xl hover:border-brand-accent transition-colors flex flex-col items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-accent"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span class="text-sm font-semibold">{esc(contact.get('email'))}</span>
+        </a>
+        <a href="tel:{esc(contact.get('phone'))}" class="p-6 bg-brand-muted/30 border border-brand-hairline rounded-2xl hover:border-brand-accent transition-colors flex flex-col items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-accent"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span class="text-sm font-semibold">{esc(contact.get('phone'))}</span>
+        </a>
+        <a href="https://instagram.com/{esc(contact.get('instagram','')).lstrip('@')}" target="_blank" class="p-6 bg-brand-muted/30 border border-brand-hairline rounded-2xl hover:border-brand-accent transition-colors flex flex-col items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-accent"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01"/></svg>
+          <span class="text-sm font-semibold">@{esc(contact.get('instagram','')).lstrip('@')}</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-brand-hairline bg-brand-muted/20 px-6 py-12">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-6">
+      <div class="flex flex-col items-center sm:items-start gap-1">
+        <span class="text-lg font-bold text-brand-ink">{esc(brand_name)}</span>
+        <span class="text-xs text-brand-ink/60">{esc(footer.get('tagline'))}</span>
+      </div>
+      <div class="text-xs text-brand-ink/50">
+        © <span id="year"></span> {esc(footer.get('copyright_owner') or brand_name)}. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+"""
+
+# ---------------------------------------------------------------------------
 # 3. Handler
 # ---------------------------------------------------------------------------
 
@@ -572,9 +797,40 @@ async def handle(ctx: SkillContext) -> SkillResult:
             else:
                 outputs["deploy_error"] = gh_res.error
 
+    # Create website preview Asset
+    from helix.models.workflow import Asset
+    
+    preview_html = _render_preview_html(
+        brand_name=brand_name,
+        tagline=tagline,
+        design_system=design_system,
+        sections=sections,
+    )
+    
+    asset = Asset(
+        workflow_run_id=ctx.workflow_run_id,
+        brand_id=ctx.brand_id,
+        workspace_id=ctx.workspace_id,
+        purpose="website:preview",
+        kind="website",
+        text_content=preview_html,
+        mime_type="text/html",
+        metadata_={
+            "slug": slug,
+            "brand_name": brand_name,
+            "tagline": tagline,
+        }
+    )
+    ctx.db.add(asset)
+    await ctx.db.flush()
+    
+    outputs["preview_asset_id"] = str(asset.id)
+    asset_ids = [asset.id]
+
     await ctx.db.commit()
     return SkillResult(
         ok=True,
         outputs=outputs,
+        asset_ids=asset_ids,
         cost_usd=total_cost,
     )

@@ -114,7 +114,12 @@ async def update_agent_session(
     return AgentSessionRead.model_validate(session)
 
 
-@router.delete("/agent-sessions/{session_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+@router.delete(
+    "/agent-sessions/{session_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
 async def delete_agent_session(
     session_id: UUID,
     user: User = Depends(require_user),
@@ -211,7 +216,12 @@ async def update_scheduled_job(
     return ScheduledJobRead.model_validate(job)
 
 
-@router.delete("/scheduled-jobs/{job_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+@router.delete(
+    "/scheduled-jobs/{job_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
 async def delete_scheduled_job(
     job_id: UUID,
     user: User = Depends(require_user),
@@ -308,7 +318,12 @@ async def update_trigger(
     return TriggerRead.model_validate(trigger)
 
 
-@router.delete("/triggers/{trigger_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+@router.delete(
+    "/triggers/{trigger_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
+)
 async def delete_trigger(
     trigger_id: UUID,
     user: User = Depends(require_user),

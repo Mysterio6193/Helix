@@ -124,8 +124,8 @@ Respond ONLY with valid JSON. Do not include markdown blocks like ```json or any
         learnings_raw = data.get("learnings", [])
         
         output_learnings = []
-        for l in learnings_raw:
-            skill_name = l.get("skill_name")
+        for item in learnings_raw:
+            skill_name = item.get("skill_name")
             if not skill_name:
                 continue
             
@@ -133,14 +133,14 @@ Respond ONLY with valid JSON. Do not include markdown blocks like ```json or any
                 "skill_name": skill_name,
                 "workflow_run_id": run_id,
                 "brand_id": brand_id,
-                "trigger_context": l.get("trigger_context", f"Workflow {workflow}"),
-                "prompt_delta": l.get("prompt_delta", ""),
-                "score": l.get("score", avg_critic_score),
-                "success_markers": l.get("success_markers", {"critic_score": avg_critic_score}),
+                "trigger_context": item.get("trigger_context", f"Workflow {workflow}"),
+                "prompt_delta": item.get("prompt_delta", ""),
+                "score": item.get("score", avg_critic_score),
+                "success_markers": item.get("success_markers", {"critic_score": avg_critic_score}),
             })
         return output_learnings
 
-    except Exception as exc:
+    except Exception:
         log.exception("llm_reflection_failed_falling_back")
         return _offline_fallback_reflection(state, run_id, brand_id)
 

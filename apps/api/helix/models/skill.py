@@ -43,7 +43,7 @@ class SkillRegistry(Base):
     created_at: Mapped[created_at_col]
     updated_at: Mapped[updated_at_col]
 
-    learnings: Mapped[list["SkillLearning"]] = relationship(
+    learnings: Mapped[list[SkillLearning]] = relationship(
         back_populates="skill", cascade="all, delete-orphan"
     )
 

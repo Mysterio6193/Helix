@@ -2,10 +2,11 @@ import asyncio
 import uuid
 from typing import Any
 
-from helix.agents.executive_council import ExecutiveCouncilAgent
 from helix.agents.base import AgentContext
-from helix.tools.registry import register_tool
+from helix.agents.executive_council import ExecutiveCouncilAgent
 from helix.tools.base import Tool, ToolResult
+from helix.tools.registry import register_tool
+
 
 # Register a mock openai_chat tool so we can test the debate logic deterministically without API keys
 class MockOpenAIChat(Tool):
@@ -50,8 +51,10 @@ register_tool(MockOpenAIChat())
 # Mock helix.events.bus.publish to prevent connection to a running redis server in tests
 import helix.events.bus
 import helix.workflows.helpers
+
+
 async def mock_publish(db, *, kind, channel, payload, **kwargs):
-    print(f"  [Mock Event] {kind} -> {payload.get('msg') or payload.get('role') or payload.get('summary') or payload.get('step') or ''}")
+    pass
 helix.events.bus.publish = mock_publish
 helix.workflows.helpers.publish = mock_publish
 
@@ -77,24 +80,17 @@ async def main():
         }
     )
     
-    print("Running ExecutiveCouncilAgent Boardroom debate...")
     result = await agent.run(ctx)
     
-    print("\n--- Boardroom Result ---")
-    print(f"Success: {result.ok}")
     if result.ok:
         patch = result.patch
-        decision = patch.get("boardroom_decision", {})
-        print(f"Agreed Design School: {patch.get('design_school')}")
-        print(f"CMO Summary: {decision.get('summary')}")
-        print("Final copy hooks:")
-        for hook in patch.get("copy_hooks", []):
-            print(f"  - {hook}")
-        print("\nDebate Steps:")
-        for step in patch.get("boardroom_debate", []):
-            print(f"  [{step['role'].upper()}]: {step['content'][:150]}...")
+        patch.get("boardroom_decision", {})
+        for _hook in patch.get("copy_hooks", []):
+            pass
+        for _step in patch.get("boardroom_debate", []):
+            pass
     else:
-        print(f"Error: {result.error}")
+        pass
 
 if __name__ == "__main__":
     asyncio.run(main())

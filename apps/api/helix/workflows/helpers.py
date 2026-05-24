@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import time
+from datetime import UTC
 from typing import Any
 from uuid import UUID
 
@@ -142,13 +143,13 @@ async def mark_run_status(
         return
     run.status = status
     if status == "running" and run.started_at is None:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        run.started_at = datetime.now(timezone.utc)
+        run.started_at = datetime.now(UTC)
     if status in ("succeeded", "failed", "canceled"):
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        run.ended_at = datetime.now(timezone.utc)
+        run.ended_at = datetime.now(UTC)
     if error:
         run.error = error
     await session.flush()

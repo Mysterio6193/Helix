@@ -108,7 +108,7 @@ export default function BrandDetail({ params }: PageProps) {
               Launch a workflow
             </h2>
             <p className="text-body-sm text-[color:var(--color-steel)]">
-              Each slice is a LangGraph that produces real artifacts.
+              Each workflow produces real strategy, creative, campaign, or commerce artifacts.
             </p>
           </div>
         </div>

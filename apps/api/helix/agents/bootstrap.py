@@ -43,6 +43,5 @@ def bootstrap_agents() -> list[str]:
 
 if __name__ == "__main__":
     names = bootstrap_agents()
-    print(f"Registered {len(names)} agents:")
-    for n in names:
-        print(f"  - {n}")
+    for _n in names:
+        pass

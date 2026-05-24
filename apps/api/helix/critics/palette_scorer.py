@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import io
 import math
-from typing import Any
 
 import httpx
 from PIL import Image

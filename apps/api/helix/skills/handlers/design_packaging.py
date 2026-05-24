@@ -13,7 +13,6 @@ from helix.models.workflow import Asset
 from helix.skills.base import SkillContext, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
 
-
 # ---------------------------------------------------------------------------
 # SKU catalog — surface + dieline metadata fed into the prompt + Asset metadata.
 # Sizes are nominal pixel sizes the image tool can return; print-fidelity dielines

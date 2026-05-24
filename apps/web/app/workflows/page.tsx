@@ -9,8 +9,8 @@ export default function WorkflowsIndex() {
           Workflows
         </h1>
         <p className="mt-2 text-body-md text-[color:var(--color-slate)] max-w-[60ch]">
-          Every run is a LangGraph executed by the worker. Streams are live —
-          subscribe to one to watch the agent loop in real time.
+          Every run is a Helix execution plan with live status, checkpoints,
+          agent actions, artifacts, and replayable history.
         </p>
       </header>
       <RunList limit={40} />

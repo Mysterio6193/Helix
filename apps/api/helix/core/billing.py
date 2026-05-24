@@ -6,6 +6,8 @@ Thin wrapper around the Stripe SDK. Centralizes:
  - Customer portal session creation
  - Webhook signature verification + event handling
  - Local Subscription mirror updates
+ - Quota enforcement for LLM endpoints
+ - Metered usage reporting to Stripe
 
 Keep this file Stripe-specific. The API router calls into here so endpoints
 don't have to deal with the SDK directly.
@@ -13,10 +15,10 @@ don't have to deal with the SDK directly.
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from helix.core.config import settings
@@ -32,6 +34,7 @@ from helix.models.billing import (
     Subscription,
 )
 from helix.models.organization import Organization, User
+from helix.models.usage import UsageRecord
 
 log = get_logger("helix.billing")
 
@@ -73,7 +76,7 @@ PLAN_CATALOG: list[dict[str, Any]] = [
             "10 workflow runs / month",
             "Community support",
         ],
-        "limits": {"brands": 1, "runs_per_month": 10},
+        "limits": {"brands": 1, "runs_per_month": 10, "members": 1, "api_keys": 3},
         "stripe_price_id": None,
     },
     {
@@ -88,7 +91,7 @@ PLAN_CATALOG: list[dict[str, Any]] = [
             "Email support",
             "All integrations",
         ],
-        "limits": {"brands": 5, "runs_per_month": 200},
+        "limits": {"brands": 5, "runs_per_month": 200, "members": 5, "api_keys": 10},
         "stripe_price_id_setting": "stripe_price_starter",
     },
     {
@@ -103,7 +106,7 @@ PLAN_CATALOG: list[dict[str, Any]] = [
             "Priority support",
             "Custom design systems",
         ],
-        "limits": {"brands": 25, "runs_per_month": 1500},
+        "limits": {"brands": 25, "runs_per_month": 1500, "members": 25, "api_keys": 50},
         "stripe_price_id_setting": "stripe_price_pro",
         "highlight": True,
     },
@@ -119,7 +122,7 @@ PLAN_CATALOG: list[dict[str, Any]] = [
             "SLA + dedicated support",
             "SSO + audit logs",
         ],
-        "limits": {"brands": None, "runs_per_month": 10000},
+        "limits": {"brands": None, "runs_per_month": 10000, "members": None, "api_keys": 200},
         "stripe_price_id_setting": "stripe_price_business",
     },
 ]
@@ -141,6 +144,14 @@ def get_public_plans() -> list[dict[str, Any]]:
     return plans
 
 
+def get_plan_limits(plan: str = PLAN_FREE) -> dict:
+    """Return the limit dict for a given plan tier."""
+    for p in PLAN_CATALOG:
+        if p["id"] == plan:
+            return p["limits"]
+    return {"brands": 1, "runs_per_month": 10, "members": 1, "api_keys": 3}
+
+
 def plan_from_price_id(price_id: str) -> str:
     """Map a Stripe price ID back to an internal plan tier."""
     mapping = {
@@ -149,6 +160,111 @@ def plan_from_price_id(price_id: str) -> str:
         settings.stripe_price_business: PLAN_BUSINESS,
     }
     return mapping.get(price_id, PLAN_FREE)
+
+
+# --- Quota enforcement ---------------------------------------------------
+
+
+async def check_llm_quota(
+    db: AsyncSession, organization_id
+) -> dict:
+    """Check whether this org has remaining quota for the current billing period.
+    Returns dict with allowed boolean and usage stats."""
+    sub = await get_or_create_subscription(db, organization_id)
+    limits = get_plan_limits(sub.plan)
+    run_limit = limits.get("runs_per_month", 50)
+
+    now = datetime.now(UTC)
+    period_start = sub.current_period_end - timedelta(days=30) if sub.current_period_end else now.replace(day=1)
+    if period_start > now:
+        period_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    if run_limit is None:
+        return {"allowed": True, "limit": None, "used": 0, "remaining": None}
+
+    used = (
+        await db.execute(
+            select(func.count(UsageRecord.id))
+            .where(
+                UsageRecord.organization_id == organization_id,
+                UsageRecord.created_at >= period_start,
+            )
+        )
+    ).scalar_one() or 0
+
+    remaining = max(0, run_limit - used)
+
+    return {"allowed": remaining > 0, "limit": run_limit, "used": used, "remaining": remaining}
+
+
+async def report_metered_usage(organization_id, quantity: int, timestamp: datetime | None = None) -> bool:
+    """Report usage to Stripe metered billing (non-blocking, fire-and-forget)."""
+    if not settings.stripe_secret_key:
+        return False
+    try:
+        stripe = _stripe_client()
+        stripe.billing.MeterEvent.create(
+            event_name="llm_calls",
+            payload={
+                "value": str(quantity),
+                "stripe_customer_id": str(organization_id),
+            },
+            timestamp=timestamp or int(time.time()),
+        )
+        return True
+    except Exception:
+        log.warning("billing.meter_report_failed", org_id=str(organization_id))
+        return False
+
+
+async def get_billing_period_usage(
+    db: AsyncSession, organization_id
+) -> dict:
+    """Aggregate usage stats for the current billing period."""
+    sub = await get_or_create_subscription(db, organization_id)
+    limits = get_plan_limits(sub.plan)
+    now = datetime.now(UTC)
+    period_start = sub.current_period_end - timedelta(days=30) if sub.current_period_end else now.replace(day=1)
+
+    query = select(
+        func.sum(UsageRecord.prompt_tokens).label("prompt_tokens"),
+        func.sum(UsageRecord.completion_tokens).label("completion_tokens"),
+        func.sum(UsageRecord.cost_usd).label("cost_usd"),
+        func.count(UsageRecord.id).label("calls"),
+    ).where(
+        UsageRecord.organization_id == organization_id,
+        UsageRecord.created_at >= period_start,
+    )
+    row = (await db.execute(query)).one()
+
+    model_query = (
+        select(
+            UsageRecord.model_id,
+            func.sum(UsageRecord.prompt_tokens).label("prompt_tokens"),
+            func.sum(UsageRecord.completion_tokens).label("completion_tokens"),
+            func.sum(UsageRecord.cost_usd).label("cost_usd"),
+            func.count(UsageRecord.id).label("calls"),
+        )
+        .where(
+            UsageRecord.organization_id == organization_id,
+            UsageRecord.created_at >= period_start,
+        )
+        .group_by(UsageRecord.model_id)
+    )
+    models = [dict(r._mapping) for r in (await db.execute(model_query)).all()]
+
+    run_limit = limits.get("runs_per_month")
+    return {
+        "plan": sub.plan,
+        "period_start": period_start.isoformat(),
+        "period_end": sub.current_period_end.isoformat() if sub.current_period_end else None,
+        "prompt_tokens": row.prompt_tokens or 0,
+        "completion_tokens": row.completion_tokens or 0,
+        "cost_usd": float(row.cost_usd) if row.cost_usd else 0.0,
+        "calls": row.calls or 0,
+        "call_limit": run_limit,
+        "models": models,
+    }
 
 
 # --- DB helpers -----------------------------------------------------------
@@ -207,7 +323,7 @@ async def create_checkout_session(
     """Create a Stripe Checkout session and return its hosted URL."""
     stripe = _stripe_client()
 
-    price_id: Optional[str] = None
+    price_id: str | None = None
     if plan == PLAN_STARTER:
         price_id = settings.stripe_price_starter
     elif plan == PLAN_PRO:
@@ -286,7 +402,7 @@ def verify_webhook_signature(payload: bytes, signature: str) -> dict[str, Any]:
 def _ts_to_dt(ts: int | None) -> datetime | None:
     if ts is None:
         return None
-    return datetime.fromtimestamp(ts, tz=timezone.utc)
+    return datetime.fromtimestamp(ts, tz=UTC)
 
 
 async def handle_webhook_event(db: AsyncSession, event: dict[str, Any]) -> None:

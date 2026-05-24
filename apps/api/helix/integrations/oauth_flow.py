@@ -5,7 +5,7 @@ from __future__ import annotations
 import base64
 import secrets
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import urlencode
 
@@ -161,8 +161,8 @@ async def refresh_token(
 
 def compute_expiry(payload: dict[str, Any]) -> datetime | None:
     expires_in = payload.get("expires_in")
-    if isinstance(expires_in, (int, float)):
-        return datetime.now(timezone.utc) + timedelta(seconds=int(expires_in))
+    if isinstance(expires_in, int | float):
+        return datetime.now(UTC) + timedelta(seconds=int(expires_in))
     return None
 
 

@@ -15,7 +15,7 @@ from helix.agents.base import AgentContext, AgentResult
 from helix.core.logging import get_logger
 from helix.core.observability import score_trace
 from helix.skills.base import SkillResult
-from helix.skills.registry import get_handler, get_manifest, list_manifests
+from helix.skills.registry import get_handler, list_manifests
 from helix.tools.registry import get_tool, list_tools
 from helix.workflows.helpers import emit_event
 
@@ -299,10 +299,9 @@ Rules:
         step_idx: int,
     ) -> dict[str, Any]:
         """Invoke a skill handler and return a summary dict."""
-        from helix.agents.base import Agent
+        from helix.core.db import session_factory
         from helix.skills.base import SkillContext
         from helix.skills.learning import format_learnings_preamble, load_learnings
-        from helix.core.db import session_factory
 
         handler = get_handler(skill_name)
         if handler is None:

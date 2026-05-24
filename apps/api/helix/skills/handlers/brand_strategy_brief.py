@@ -7,7 +7,6 @@ from typing import Any
 from helix.skills.base import SkillContext, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
 
-
 SYSTEM_PROMPT = (
     "You are a brand strategist for restaurants and food brands. "
     "Return ONLY a JSON object with keys: positioning (string, ~25 words), "

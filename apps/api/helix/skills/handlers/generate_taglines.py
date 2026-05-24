@@ -7,7 +7,6 @@ from typing import Any
 from helix.skills.base import SkillContext, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
 
-
 SYSTEM_PROMPT = (
     "You are a senior copywriter for restaurants. "
     "Return ONLY a JSON object with key 'options' = array of items "

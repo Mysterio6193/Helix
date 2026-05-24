@@ -6,8 +6,8 @@ from pathlib import Path
 
 from helix.core.config import get_settings
 from helix.core.logging import get_logger
-from helix.skills.loader import sync_registry
 from helix.design_systems.loader import sync_design_systems
+from helix.skills.loader import sync_registry
 
 log = get_logger("helix.core.watcher")
 

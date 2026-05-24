@@ -15,9 +15,13 @@ import asyncio
 import json
 import signal
 import time
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import redis.asyncio as aioredis
+
+if TYPE_CHECKING:
+    from helix.workers.health import WorkerState
 
 from helix.agents.bootstrap import bootstrap_agents
 from helix.core.config import get_settings
@@ -82,7 +86,7 @@ async def _process(
         )
     except Exception:
         log.exception("worker.invalid_job", job=job)
-        await client.lpush(DLQ_KEY, json.dumps(job))
+        await client.lpush(DLQ_KEY, json.dumps(job))  # type: ignore[misc]
         await worker_state.inc_dlq()
         return
 
@@ -117,7 +121,7 @@ async def _process(
                 delay_s=delay,
             )
         else:
-            await client.lpush(DLQ_KEY, json.dumps(job))
+            await client.lpush(DLQ_KEY, json.dumps(job))  # type: ignore[misc]
             await worker_state.inc_dlq()
             log.warning(
                 "worker.dlq",

@@ -16,7 +16,6 @@ from helix.models.workflow import Asset
 from helix.skills.base import SkillContext, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
 
-
 _FORMAT_DIMS: dict[str, tuple[str, str]] = {
     # format key -> (image size, orientation descriptor)
     "a4_portrait": ("1024x1536", "A4 portrait (210x297mm), single page"),

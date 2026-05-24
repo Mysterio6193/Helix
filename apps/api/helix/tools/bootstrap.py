@@ -6,6 +6,7 @@ Also invoked from the FastAPI lifespan.
 from __future__ import annotations
 
 from helix.core.logging import get_logger
+from helix.tools.adapters.browser_automation import BrowserUseTool, StagehandTool
 from helix.tools.adapters.deploy import GithubRepoTool, VercelDeployTool
 from helix.tools.adapters.image import (
     FluxImageTool,
@@ -26,7 +27,13 @@ from helix.tools.adapters.productivity import (
     NotionApiTool,
     WebSearchTool,
 )
-from helix.tools.adapters.browser_automation import BrowserUseTool, StagehandTool
+from helix.tools.adapters.saas import (
+    KlaviyoApiTool,
+    MetaAdsApiTool,
+    ShopifyApiTool,
+    StripeApiTool,
+    TwilioSmsTool,
+)
 from helix.tools.adapters.storage import PgvectorMemoryTool, S3StorageTool
 from helix.tools.registry import clear_registry, list_tools, register_tool
 
@@ -53,6 +60,12 @@ _BUILTINS = (
     NotionApiTool,
     GmailDraftTool,
     WebSearchTool,
+    # SaaS / E-commerce
+    ShopifyApiTool,
+    KlaviyoApiTool,
+    MetaAdsApiTool,
+    StripeApiTool,
+    TwilioSmsTool,
     # Storage / memory
     S3StorageTool,
     PgvectorMemoryTool,
@@ -78,6 +91,5 @@ def bootstrap_tools(*, reset: bool = False) -> list[str]:
 
 if __name__ == "__main__":
     names = bootstrap_tools(reset=True)
-    print(f"Registered {len(names)} tools:")
-    for n in names:
-        print(f"  - {n}")
+    for _n in names:
+        pass

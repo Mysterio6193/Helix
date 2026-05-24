@@ -1,7 +1,7 @@
 """Billing API endpoints — Stripe-backed subscriptions."""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from pydantic import BaseModel
@@ -9,12 +9,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from helix.core import billing as billing_service
-from helix.core.billing import BillingNotConfigured, get_public_plans
+from helix.core.billing import BillingNotConfigured, get_billing_period_usage, get_public_plans
 from helix.core.config import settings
 from helix.core.db import get_db
 from helix.core.logging import get_logger
 from helix.core.sessions import get_current_user
-from helix.models.billing import Subscription
 from helix.models.organization import Organization, User
 
 router = APIRouter(prefix="/billing", tags=["billing"])
@@ -23,8 +22,8 @@ log = get_logger("helix.api.billing")
 
 class CheckoutCreate(BaseModel):
     plan: str
-    success_url: Optional[str] = None
-    cancel_url: Optional[str] = None
+    success_url: str | None = None
+    cancel_url: str | None = None
 
 
 class CheckoutResponse(BaseModel):
@@ -39,13 +38,13 @@ class SubscriptionStatus(BaseModel):
     plan: str
     status: str
     cancel_at_period_end: bool
-    current_period_end: Optional[str] = None
-    stripe_customer_id: Optional[str] = None
+    current_period_end: str | None = None
+    stripe_customer_id: str | None = None
     has_active_subscription: bool
-    publishable_key: Optional[str] = None
+    publishable_key: str | None = None
 
 
-def _require_user(user: Optional[User]) -> User:
+def _require_user(user: User | None) -> User:
     if user is None:
         raise HTTPException(status_code=401, detail="not_authenticated")
     return user
@@ -75,7 +74,7 @@ async def list_plans() -> dict[str, Any]:
 
 @router.get("/subscription", response_model=SubscriptionStatus)
 async def get_subscription(
-    user: Optional[User] = Depends(get_current_user),
+    user: User | None = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> SubscriptionStatus:
     """Current subscription state for the authenticated user's org."""
@@ -98,7 +97,7 @@ async def get_subscription(
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout(
     payload: CheckoutCreate,
-    user: Optional[User] = Depends(get_current_user),
+    user: User | None = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CheckoutResponse:
     """Start a Stripe Checkout flow for the chosen plan."""
@@ -131,7 +130,7 @@ async def create_checkout(
 
 @router.post("/portal", response_model=PortalResponse)
 async def create_portal(
-    user: Optional[User] = Depends(get_current_user),
+    user: User | None = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> PortalResponse:
     """Open the Stripe Customer Portal so the user can manage payment + cancel."""
@@ -148,10 +147,20 @@ async def create_portal(
     return PortalResponse(url=url)
 
 
+@router.get("/usage")
+async def billing_usage(
+    user: User | None = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Usage stats for the current billing period."""
+    u = _require_user(user)
+    return await get_billing_period_usage(db, u.organization_id)
+
+
 @router.post("/webhook")
 async def stripe_webhook(
     request: Request,
-    stripe_signature: Optional[str] = Header(default=None, alias="Stripe-Signature"),
+    stripe_signature: str | None = Header(default=None, alias="Stripe-Signature"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, bool]:
     """Stripe webhook endpoint. Configure in Stripe dashboard:

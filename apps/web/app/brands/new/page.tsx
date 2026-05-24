@@ -71,7 +71,7 @@ export default function NewBrandPage() {
           Create brand canvas
         </h1>
         <p className="text-body-md text-[color:var(--color-slate)]">
-          Establish the foundational brand identity. This will act as the root context and seed memory for all downstream AI slices.
+          Establish the foundational brand identity. This becomes the root context and seed memory for downstream Helix workflows.
         </p>
       </header>
 

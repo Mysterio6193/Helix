@@ -8,7 +8,7 @@ persisted before returning.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -52,8 +52,9 @@ async def get_access_token(
     account_label: str | None = None,
 ) -> str | None:
     """Return a usable access token for `provider`, refreshing if expired."""
-    from helix.core.security import decrypt
     import json
+
+    from helix.core.security import decrypt
 
     conn = await _load_connection(
         db, workspace_id=workspace_id, provider=provider, account_label=account_label
@@ -75,7 +76,7 @@ async def get_access_token(
     needs_refresh = (
         expires_at is not None
         and refresh_value
-        and expires_at <= datetime.now(timezone.utc)
+        and expires_at <= datetime.now(UTC)
     )
     if not needs_refresh:
         return access_token
@@ -101,8 +102,34 @@ async def get_access_token(
         credentials=merged,
         scopes=conn.scopes,
         account_label=conn.account_label,
-        metadata={"refreshed_at": datetime.now(timezone.utc).isoformat()},
+        metadata={"refreshed_at": datetime.now(UTC).isoformat()},
         expires_at=compute_expiry(refreshed),
     )
     await db.commit()
     return new_access
+
+
+async def get_integration_credentials(
+    db: AsyncSession,
+    *,
+    workspace_id: uuid.UUID,
+    provider: str,
+    account_label: str | None = None,
+) -> dict[str, Any] | None:
+    """Return decrypted credentials dict for the provider."""
+    import json
+
+    from helix.core.security import decrypt
+
+    conn = await _load_connection(
+        db, workspace_id=workspace_id, provider=provider, account_label=account_label
+    )
+    if conn is None:
+        return None
+
+    try:
+        return json.loads(decrypt(conn.credentials_encrypted))
+    except Exception:
+        log.exception("creds_decrypt_failed", provider=provider)
+        return None
+

@@ -87,7 +87,7 @@ async def _load_prior_node(state: HelixState) -> dict[str, Any]:
         patch["copy"] = inputs["copy"]
     if inputs.get("logos"):
         patch["visuals"] = [
-            {**l, "purpose": l.get("purpose", "logo")} for l in inputs["logos"]
+            {**item, "purpose": item.get("purpose", "logo")} for item in inputs["logos"]
         ]
     return {
         **patch,

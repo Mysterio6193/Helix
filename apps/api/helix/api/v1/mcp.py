@@ -53,7 +53,7 @@ class McpInfo(BaseModel):
 class McpToolSpec(BaseModel):
     name: str
     description: str
-    inputSchema: dict[str, Any]
+    inputSchema: dict[str, Any]  # noqa: N815
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -67,7 +67,7 @@ class McpCallRequest(BaseModel):
 
 
 class McpCallResult(BaseModel):
-    isError: bool
+    isError: bool  # noqa: N815
     content: list[dict[str, Any]]
     cost_usd: float | None = None
     latency_ms: int | None = None

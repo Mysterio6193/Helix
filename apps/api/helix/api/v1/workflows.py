@@ -1,12 +1,9 @@
-"""Workflows API: introspection over compiled LangGraph slices.
+"""Workflows API: introspection over Helix execution plans.
 
-All endpoints require authentication. The set of available slices is
-discovered dynamically by scanning the `helix.workflows.slices` package
-at request time — there is no hardcoded slice list to drift out of sync
-with the filesystem. The fallback topology is a generic linear graph
-that's always safe to render when LangGraph introspection isn't
-available; per-slice fallbacks are not maintained because the compiled
-graph is the source of truth.
+All endpoints require authentication. The set of available workflow plans is
+discovered dynamically at request time so newly added plans appear without a
+hardcoded public list. The fallback topology is a generic linear plan that's
+always safe to render when plan introspection is unavailable.
 """
 from __future__ import annotations
 
@@ -25,7 +22,7 @@ _SLICES_PACKAGE = "helix.workflows.slices"
 
 
 def _discover_slices() -> dict[str, str]:
-    """Return {slice_name: fully_qualified_module}. Runs at request time
+    """Return {workflow_name: fully_qualified_module}. Runs at request time
     so newly added slice files appear without restart."""
     try:
         pkg = importlib.import_module(_SLICES_PACKAGE)
@@ -40,7 +37,7 @@ def _discover_slices() -> dict[str, str]:
 
 
 def _generic_fallback() -> dict[str, list[dict[str, Any]]]:
-    """Generic topology used when LangGraph introspection isn't available."""
+    """Generic topology used when execution-plan introspection is unavailable."""
     nodes = [
         {"id": "__start__", "label": "Start"},
         {"id": "orchestrate", "label": "Orchestrate"},
@@ -66,28 +63,28 @@ def _generic_fallback() -> dict[str, list[dict[str, Any]]]:
 async def list_workflows(
     user: User = Depends(require_user),
 ) -> dict[str, Any]:
-    """List the slices available on this deployment."""
+    """List the workflows available on this deployment."""
     slices = _discover_slices()
     return {
-        "slices": [
-            {"name": name, "module": module}
+        "workflows": [
+            {"name": name, "title": name.replace("_", " ").title()}
             for name, module in sorted(slices.items())
         ]
     }
 
 
-@router.get("/{slice_name}/graph")
+@router.get("/{workflow_name}/graph")
 async def get_workflow_graph(
-    slice_name: str,
+    workflow_name: str,
     user: User = Depends(require_user),
 ) -> dict[str, list[dict[str, Any]]]:
-    """Return React Flow nodes and edges for the compiled LangGraph slice."""
+    """Return visual nodes and edges for the compiled Helix workflow."""
     slices = _discover_slices()
-    if slice_name not in slices:
-        raise HTTPException(status_code=404, detail=f"Workflow slice '{slice_name}' not found")
+    if workflow_name not in slices:
+        raise HTTPException(status_code=404, detail=f"Workflow '{workflow_name}' not found")
 
     try:
-        mod = importlib.import_module(slices[slice_name])
+        mod = importlib.import_module(slices[workflow_name])
         graph = getattr(mod, "_GRAPH", None)
         if graph is None:
             return _generic_fallback()

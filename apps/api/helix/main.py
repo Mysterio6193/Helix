@@ -1,8 +1,8 @@
 """FastAPI application entrypoint."""
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware

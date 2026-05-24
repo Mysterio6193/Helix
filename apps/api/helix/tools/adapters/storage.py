@@ -1,6 +1,7 @@
 """Storage + memory tool adapters (S3, pgvector)."""
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from helix.core.storage import S3Storage
@@ -28,12 +29,12 @@ class S3StorageTool(Tool):
             if data is None:
                 return ToolResult(ok=False, error="data required for put")
             target_key = key or storage.make_key(prefix, ext)
-            storage.put_bytes(target_key, data, content_type=content_type)
+            await asyncio.to_thread(storage.put_bytes, target_key, data, content_type=content_type)
             return ToolResult(ok=True, data={"s3_key": target_key})
         if op == "presign":
             if not key:
                 return ToolResult(ok=False, error="key required for presign")
-            url = storage.presigned_get_url(key, expires_in=expires_in)
+            url = await asyncio.to_thread(storage.presign_get, key, ttl_seconds=expires_in)
             return ToolResult(ok=True, data={"url": url, "expires_in": expires_in})
         return ToolResult(ok=False, error=f"unknown op: {op}")
 

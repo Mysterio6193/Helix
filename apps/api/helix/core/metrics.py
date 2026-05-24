@@ -12,7 +12,7 @@ from __future__ import annotations
 import threading
 import time
 from collections import defaultdict
-from typing import Any, Tuple
+from typing import Any
 
 try:  # pragma: no cover - import guard
     from prometheus_client import (  # type: ignore
@@ -36,11 +36,11 @@ except Exception:  # noqa: BLE001
 # Fallback in-process counters (always present)
 # ---------------------------------------------------------------------------
 _LOCK = threading.Lock()
-_COUNTERS: dict[str, dict[Tuple[Tuple[str, str], ...], float]] = defaultdict(dict)
-_GAUGES: dict[str, dict[Tuple[Tuple[str, str], ...], float]] = defaultdict(dict)
+_COUNTERS: dict[str, dict[tuple[tuple[str, str], ...], float]] = defaultdict(dict)
+_GAUGES: dict[str, dict[tuple[tuple[str, str], ...], float]] = defaultdict(dict)
 
 
-def _label_key(labels: dict[str, str] | None) -> Tuple[Tuple[str, str], ...]:
+def _label_key(labels: dict[str, str] | None) -> tuple[tuple[str, str], ...]:
     if not labels:
         return ()
     return tuple(sorted(labels.items()))

@@ -12,7 +12,7 @@ import hashlib
 import hmac
 import json
 import time
-from typing import Optional
+from datetime import UTC
 from uuid import UUID
 
 from fastapi import Cookie, Depends, HTTPException, Request, status
@@ -49,7 +49,7 @@ def issue_session(user_id: str, ttl: int = SESSION_TTL_SECONDS) -> str:
     return f"{_b64encode(raw)}.{_b64encode(sig)}"
 
 
-def verify_session(token: str) -> Optional[dict]:
+def verify_session(token: str) -> dict | None:
     try:
         body_b64, sig_b64 = token.split(".", 1)
         body = _b64decode(body_b64)
@@ -64,12 +64,42 @@ def verify_session(token: str) -> Optional[dict]:
         return None
 
 
+async def _resolve_api_key(db: AsyncSession, raw_key: str) -> User | None:
+    """Resolve an API key to a User, or return None."""
+    import hashlib
+
+    from sqlalchemy import select
+
+    from helix.models.enterprise import ApiKey
+
+    if not raw_key.startswith("helix_"):
+        return None
+
+    key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+    result = await db.execute(
+        select(ApiKey).where(
+            ApiKey.key_hash == key_hash,
+            ApiKey.enabled is True,
+        )
+    )
+    key = result.scalar_one_or_none()
+    if not key:
+        return None
+
+    user = await db.get(User, key.user_id)
+    if user:
+        from datetime import datetime
+        key.last_used_at = datetime.now(UTC)
+        await db.flush()
+    return user
+
+
 async def get_current_user(
     request: Request,
-    helix_session: Optional[str] = Cookie(default=None, alias=SESSION_COOKIE),
+    helix_session: str | None = Cookie(default=None, alias=SESSION_COOKIE),
     db: AsyncSession = Depends(get_db),
-) -> Optional[User]:
-    """Returns User if a valid session cookie is present, else None.
+) -> User | None:
+    """Returns User if a valid session cookie or API key is present, else None.
 
     Use this for endpoints where auth is optional (read-mostly).
     """
@@ -80,18 +110,24 @@ async def get_current_user(
             token = auth.split(" ", 1)[1].strip()
     if not token:
         return None
+
+    # Try session cookie first
     payload = verify_session(token)
-    if not payload:
-        return None
-    try:
-        user = await db.get(User, UUID(payload["uid"]))
-    except Exception:
-        return None
+    if payload:
+        try:
+            user = await db.get(User, UUID(payload["uid"]))
+            if user:
+                return user
+        except Exception:
+            pass
+
+    # Fall back to API key
+    user = await _resolve_api_key(db, token)
     return user
 
 
 async def require_user(
-    user: Optional[User] = Depends(get_current_user),
+    user: User | None = Depends(get_current_user),
 ) -> User:
     """Use this for endpoints that require a logged-in user."""
     if user is None:

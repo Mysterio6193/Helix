@@ -7,8 +7,9 @@ from __future__ import annotations
 
 import functools
 import time
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator, Callable, TypeVar
+from typing import Any, TypeVar
 
 from helix.core.langfuse_client import get_langfuse
 from helix.core.logging import get_logger
@@ -171,7 +172,7 @@ def traced_skill(name: str) -> Callable:
             # Try to extract trace_id from SkillContext
             trace_id = None
             for arg in args:
-                if hasattr(arg, "state") and isinstance(getattr(arg, "state"), dict):
+                if hasattr(arg, "state") and isinstance(arg.state, dict):
                     trace_id = arg.state.get("langfuse_trace_id")
                     break
 

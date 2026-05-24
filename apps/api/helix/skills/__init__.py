@@ -3,8 +3,8 @@ from helix.skills.base import Skill, SkillContext, SkillResult, register_skill_h
 from helix.skills.registry import (
     get_handler,
     get_manifest,
-    list_manifests,
     list_handlers,
+    list_manifests,
 )
 
 __all__ = [

@@ -18,6 +18,7 @@ from helix.models.memory import MemoryEntry
 from helix.models.organization import Organization, User, Workspace
 from helix.models.skill import SkillLearning, SkillRegistry
 from helix.models.tool_connection import ToolConnection
+from helix.models.usage import UsageRecord, UserApiKey
 from helix.models.workflow import Asset, Task, Workflow, WorkflowRun
 
 __all__ = [
@@ -39,7 +40,9 @@ __all__ = [
     "Subscription",
     "Task",
     "ToolConnection",
+    "UsageRecord",
     "User",
+    "UserApiKey",
     "Workflow",
     "WorkflowRun",
     "Workspace",

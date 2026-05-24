@@ -22,7 +22,7 @@ class Workflow(Base):
     created_at: Mapped[created_at_col]
     updated_at: Mapped[updated_at_col]
 
-    runs: Mapped[list["WorkflowRun"]] = relationship(
+    runs: Mapped[list[WorkflowRun]] = relationship(
         back_populates="workflow_def", cascade="all, delete-orphan"
     )
 
@@ -70,7 +70,7 @@ class WorkflowRun(Base):
     completed_at = synonym("finished_at")
 
     workflow_def: Mapped[Workflow] = relationship(back_populates="runs")
-    tasks: Mapped[list["Task"]] = relationship(
+    tasks: Mapped[list[Task]] = relationship(
         back_populates="run", cascade="all, delete-orphan"
     )
 

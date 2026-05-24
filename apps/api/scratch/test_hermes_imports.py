@@ -1,5 +1,4 @@
 import sys
-import os
 
 # Prepend the hermes path
 HERMES_PATH = "/Users/mihirsachdev/Downloads/MARK FINAL/helix/packages/vendor/hermes-agent"
@@ -8,12 +7,9 @@ if HERMES_PATH not in sys.path:
 
 try:
     from tools.registry import registry
-    from run_agent import AIAgent
-    print("Success: Imported registry and AIAgent!")
     
     # Let's check registering a dummy tool under 'helix'
     def dummy_handler(**kwargs):
-        print(f"Dummy handler called with kwargs: {kwargs}")
         return "Dummy result"
         
     dummy_schema = {
@@ -35,8 +31,6 @@ try:
         handler=dummy_handler,
         is_async=False,
     )
-    print("Success: Registered dummy tool under 'helix'!")
-except Exception as e:
-    print(f"Failed: {type(e).__name__}: {e}")
+except Exception:
     import traceback
     traceback.print_exc()

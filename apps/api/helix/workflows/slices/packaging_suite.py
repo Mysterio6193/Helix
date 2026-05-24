@@ -104,7 +104,7 @@ async def _load_prior_node(state: HelixState) -> dict[str, Any]:
     if inputs.get("logos"):
         # Carry approved logos into `visuals` so the agent's logo filter still works.
         patch["visuals"] = [
-            {**l, "purpose": l.get("purpose", "logo")} for l in inputs["logos"]
+            {**item, "purpose": item.get("purpose", "logo")} for item in inputs["logos"]
         ]
     return {
         **patch,

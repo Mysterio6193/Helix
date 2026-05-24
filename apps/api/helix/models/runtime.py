@@ -76,10 +76,10 @@ class AgentSession(Base):
     created_at: Mapped[created_at_col]
     updated_at: Mapped[updated_at_col]
 
-    schedules: Mapped[list["ScheduledJob"]] = relationship(
+    schedules: Mapped[list[ScheduledJob]] = relationship(
         back_populates="session", cascade="save-update, merge"
     )
-    triggers: Mapped[list["Trigger"]] = relationship(
+    triggers: Mapped[list[Trigger]] = relationship(
         back_populates="session", cascade="save-update, merge"
     )
 

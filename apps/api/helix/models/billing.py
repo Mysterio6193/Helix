@@ -75,7 +75,7 @@ class Subscription(Base):
     created_at: Mapped[created_at_col]
     updated_at: Mapped[updated_at_col]
 
-    organization: Mapped["Organization"] = relationship(
+    organization: Mapped[Organization] = relationship(
         "Organization",
         primaryjoin="Subscription.organization_id == Organization.id",
         foreign_keys=[organization_id],

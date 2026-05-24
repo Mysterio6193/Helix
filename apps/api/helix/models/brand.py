@@ -37,8 +37,8 @@ class Brand(Base):
     created_at: Mapped[created_at_col]
     updated_at: Mapped[updated_at_col]
 
-    workspace: Mapped["Workspace"] = relationship(back_populates="brands")
-    assets: Mapped[list["BrandAsset"]] = relationship(
+    workspace: Mapped[Workspace] = relationship(back_populates="brands")
+    assets: Mapped[list[BrandAsset]] = relationship(
         back_populates="brand", cascade="all, delete-orphan"
     )
 

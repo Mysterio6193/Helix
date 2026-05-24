@@ -5,8 +5,6 @@
  * CORS is transparent. On the server (RSC / route handlers) we hit the API
  * directly via NEXT_PUBLIC_API_BASE.
  */
-import type { paths } from "@helix/types";
-
 const API_BASE =
   typeof window === "undefined"
     ? (process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000") + "/api/v1"
@@ -263,12 +261,68 @@ export interface AssetItem {
   brand_id?: string | null;
   workflow_run_id?: string | null;
   kind: string;
+  purpose?: string | null;
   mime_type?: string | null;
   s3_key?: string | null;
+  storage_url?: string | null;
+  text_content?: string | null;
   width?: number | null;
   height?: number | null;
   metadata: Record<string, unknown>;
   created_at?: string | null;
+}
+
+export interface OperatingMetric {
+  label: string;
+  value: string;
+  delta?: string | null;
+  tone: "neutral" | "success" | "warning" | "error" | "info" | string;
+}
+
+export interface OperatingSystemOverview {
+  metrics: OperatingMetric[];
+  systems: Array<{
+    name: string;
+    status: string;
+    description: string;
+  }>;
+  council: Array<{
+    name: string;
+    mandate: string;
+    status: string;
+  }>;
+  intelligence_layers: Array<{
+    name: string;
+    description: string;
+    status: string;
+  }>;
+  action_feed: Array<{
+    id: string;
+    title: string;
+    status: string;
+    timestamp?: string | null;
+    detail?: string | null;
+  }>;
+  event_triggers: Array<{
+    id: string;
+    name: string;
+    event_kind?: string | null;
+    workflow: string;
+    enabled: boolean;
+    fire_count: number;
+    last_fired_at?: string | null;
+  }>;
+  automation_coverage: Record<string, number>;
+}
+
+export interface OperatingSystemBootstrapResult {
+  ok: boolean;
+  workspace_id: string;
+  created: Record<"agents" | "triggers" | "schedules", number>;
+  existing: Record<"agents" | "triggers" | "schedules", number>;
+  agents: string[];
+  triggers: string[];
+  schedules: string[];
 }
 
 /* ---------- Endpoints ---------- */
@@ -289,6 +343,20 @@ export interface AuthStatus {
 }
 
 export const api = {
+  get: <T = any>(path: string) => request<T>(path),
+  post: <T = any>(path: string, body?: any) =>
+    request<T>(path, { method: "POST", body: JSON.stringify(body) }),
+  delete: <T = any>(path: string) =>
+    request<T>(path, { method: "DELETE" }),
+  operatingSystem: {
+    overview: () =>
+      request<OperatingSystemOverview>("/operating-system/overview"),
+    bootstrap: (payload: { workspace_id?: string | null } = {}) =>
+      request<OperatingSystemBootstrapResult>("/operating-system/bootstrap", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+  },
   auth: {
     me: () => request<AuthStatus>("/auth/me"),
     providers: () =>
@@ -412,6 +480,18 @@ export const api = {
         body: JSON.stringify({ workspace_id: workspaceId, chat_id: chatId, text }),
       }),
   },
+  events: {
+    publish: (payload: {
+      workspace_id: string;
+      brand_id?: string | null;
+      event_kind: string;
+      payload: Record<string, any>;
+    }) =>
+      request<{ ok: boolean; event_kind: string; triggered_runs_count: number }>("/events", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+  },
   skills: {
     list: (params?: { includeStubs?: boolean; tag?: string }) => {
       const q = new URLSearchParams();
@@ -476,8 +556,145 @@ export const api = {
     thumbnail: (id: string) => request<{ url: string }>(`/assets/${id}/thumbnail`),
   },
   workflows: {
-    graph: (sliceName: string) =>
-      request<{ nodes: any[]; edges: any[] }>(`/workflows/${sliceName}/graph`),
+    graph: (workflowName: string) =>
+      request<{ nodes: any[]; edges: any[] }>(`/workflows/${workflowName}/graph`),
+  },
+  revenue: {
+    overview: () =>
+      request<{
+        current_revenue: { daily: number; weekly: number; monthly: number; yoy_change: number };
+        roas: { current: number; target: number; trend: string };
+        cac: { current: number; trend: string; by_channel: any[] };
+        ltv: { current: number; predicted_12m: number };
+        margin: { gross: number; net: number };
+        anomalies: any[];
+        predictions: { next_30_days: number[]; confidence: number };
+        by_channel: any[];
+      }>("/intelligence/revenue/overview"),
+    metrics: (params?: { platform?: string; metric_type?: string; days?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.platform) q.set("platform", params.platform);
+      if (params?.metric_type) q.set("metric_type", params.metric_type);
+      if (params?.days) q.set("days", String(params.days));
+      const qs = q.toString();
+      return request<any[]>(`/intelligence/revenue/metrics${qs ? `?${qs}` : ""}`);
+    },
+  },
+  customers: {
+    segments: () =>
+      request<{
+        segments: any[];
+        cohorts: Record<string, any>;
+        rfm_distribution: Record<string, number>;
+      }>("/intelligence/customers/segments"),
+    compute: (brandId: string) =>
+      request<any>("/intelligence/customers/compute-segments", {
+        method: "POST",
+        body: JSON.stringify({ brand_id: brandId }),
+      }),
+  },
+  competitors: {
+    list: () =>
+      request<{ competitors: any[]; alerts: any[] }>("/intelligence/competitors"),
+    track: (domain: string, name?: string) =>
+      request<any>(`/intelligence/competitors/track?domain=${encodeURIComponent(domain)}${name ? `&name=${encodeURIComponent(name)}` : ""}`, { method: "POST" }),
+  },
+  signals: {
+    list: (params?: { layer?: string; severity?: string; limit?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.layer) q.set("layer", params.layer);
+      if (params?.severity) q.set("severity", params.severity);
+      if (params?.limit) q.set("limit", String(params.limit));
+      const qs = q.toString();
+      return request<{ signals: any[]; unread_count: number }>(`/intelligence/signals${qs ? `?${qs}` : ""}`);
+    },
+    acknowledge: (id: string) =>
+      request<any>(`/intelligence/signals/${id}/acknowledge`, { method: "POST" }),
+    dismiss: (id: string) =>
+      request<any>(`/intelligence/signals/${id}/dismiss`, { method: "POST" }),
+  },
+  experiments: {
+    list: (params?: { status?: string; limit?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.status) q.set("status", params.status);
+      if (params?.limit) q.set("limit", String(params.limit));
+      const qs = q.toString();
+      return request<any[]>(`/intelligence/experiments${qs ? `?${qs}` : ""}`);
+    },
+    experiments: () =>
+      request<any[]>("/intelligence/experiments"),
+    experiment: (id: string) =>
+      request<any>(`/intelligence/experiments/${id}`),
+    createExperiment: (payload: any) =>
+      request<any>("/intelligence/experiments", { method: "POST", body: JSON.stringify(payload) }),
+    startExperiment: (id: string) =>
+      request<any>(`/intelligence/experiments/${id}/start`, { method: "POST" }),
+    stopExperiment: (id: string) =>
+      request<any>(`/intelligence/experiments/${id}/stop`, { method: "POST" }),
+  },
+  optimization: {
+    rules: () =>
+      request<any[]>("/intelligence/optimization/rules"),
+    evaluate: (brandId?: string) =>
+      request<any>(`/intelligence/optimization/evaluate${brandId ? `?brand_id=${encodeURIComponent(brandId)}` : ""}`, { method: "POST" }),
+    approvals: () =>
+      request<any[]>("/intelligence/optimization/approvals"),
+    approve: (id: string) =>
+      request<any>(`/intelligence/optimization/approvals/${id}/approve`, { method: "POST" }),
+    reject: (id: string) =>
+      request<any>(`/intelligence/optimization/approvals/${id}/reject`, { method: "POST" }),
+    history: (limit?: number) =>
+      request<any[]>(`/intelligence/optimization/history${limit ? `?limit=${limit}` : ""}`),
+  },
+  campaigns: {
+    health: (brandId: string) =>
+      request<any>(`/intelligence/campaigns/health?brand_id=${encodeURIComponent(brandId)}`),
+    fatigue: (brandId: string) =>
+      request<any[]>(`/intelligence/campaigns/fatigue?brand_id=${encodeURIComponent(brandId)}`),
+    optimize: (brandId: string) =>
+      request<any[]>(`/intelligence/campaigns/optimize?brand_id=${encodeURIComponent(brandId)}`),
+  },
+  browser: {
+    sessions: () =>
+      request<any[]>("/browser/sessions"),
+    createSession: (payload: any) =>
+      request<any>("/browser/sessions", { method: "POST", body: JSON.stringify(payload) }),
+    session: (id: string) =>
+      request<any>(`/browser/sessions/${id}`),
+    executeAction: (sessionId: string, payload: any) =>
+      request<any>(`/browser/sessions/${sessionId}/actions`, { method: "POST", body: JSON.stringify(payload) }),
+    closeSession: (id: string) =>
+      request<any>(`/browser/sessions/${id}/close`, { method: "POST" }),
+    automations: () =>
+      request<any[]>("/browser/automations"),
+    runAutomation: (id: string) =>
+      request<any>(`/browser/automations/${id}/run`, { method: "POST" }),
+    replay: (id: string) =>
+      request<any>(`/browser/automations/${id}/replay`),
+    testTrigger: (title: string, description: string) =>
+      request<any>(`/browser/triggers/test?signal_title=${encodeURIComponent(title)}&signal_description=${encodeURIComponent(description)}`, { method: "POST" }),
+    templates: () =>
+      request<any[]>("/browser/templates"),
+  },
+  media: {
+    jobs: () =>
+      request<any[]>("/media/jobs"),
+    createJob: (payload: any) =>
+      request<any>("/media/jobs", { method: "POST", body: JSON.stringify(payload) }),
+    runJob: (id: string) =>
+      request<any>(`/media/jobs/${id}/run`, { method: "POST" }),
+    cancelJob: (id: string) =>
+      request<any>(`/media/jobs/${id}/cancel`, { method: "POST" }),
+    templates: () =>
+      request<any[]>("/media/templates"),
+  },
+  llm: {
+    catalog: () =>
+      request<any>("/llm/models"),
+    images: (payload: any) =>
+      request<any>("/llm/images", { method: "POST", body: JSON.stringify(payload) }),
+    videos: (payload: any) =>
+      request<any>("/llm/videos", { method: "POST", body: JSON.stringify(payload) }),
   },
   billing: {
     plans: () =>
@@ -498,6 +715,43 @@ export const api = {
       }),
     portal: () =>
       request<{ url: string }>("/billing/portal", { method: "POST" }),
+    usage: () => request<BillingUsage>("/billing/usage"),
+  },
+  enterprise: {
+    apiKeys: () =>
+      request<ApiKeyItem[]>("/api-keys"),
+    createApiKey: (payload: { name: string; scopes?: Record<string, any> }) =>
+      request<ApiKeyCreated>("/api-keys", { method: "POST", body: JSON.stringify(payload) }),
+    deleteApiKey: (id: string) =>
+      request<void>(`/api-keys/${id}`, { method: "DELETE" }),
+    auditLogs: (params?: { action?: string; resource_type?: string; resource_id?: string; offset?: number; limit?: number }) => {
+      const q = new URLSearchParams();
+      if (params?.action) q.set("action", params.action);
+      if (params?.resource_type) q.set("resource_type", params.resource_type);
+      if (params?.resource_id) q.set("resource_id", params.resource_id);
+      if (params?.offset) q.set("offset", String(params.offset));
+      if (params?.limit) q.set("limit", String(params.limit));
+      const qs = q.toString();
+      return request<Page<AuditLogEntry>>(`/audit-logs${qs ? `?${qs}` : ""}`);
+    },
+    members: () =>
+      request<OrgMember[]>("/organizations/me/members"),
+    updateMemberRole: (memberId: string, payload: { role: string }) =>
+      request<OrgMember>(`/organizations/me/members/${memberId}`, { method: "PATCH", body: JSON.stringify(payload) }),
+    removeMember: (memberId: string) =>
+      request<void>(`/organizations/me/members/${memberId}`, { method: "DELETE" }),
+    invitations: () =>
+      request<OrgInvitation[]>("/organizations/me/invitations"),
+    createInvitation: (payload: { email: string; role?: string }) =>
+      request<OrgInvitation>("/organizations/me/invitations", { method: "POST", body: JSON.stringify(payload) }),
+    revokeInvitation: (id: string) =>
+      request<void>(`/organizations/me/invitations/${id}`, { method: "DELETE" }),
+    acceptInvitation: (token: string) =>
+      request<{ ok: boolean; organization_id: string }>("/invitations/accept", { method: "POST", body: JSON.stringify({ token }) }),
+    usage: () =>
+      request<OrgUsage>("/usage"),
+    rateLimit: () =>
+      request<{ plan: string; requests_per_minute: number }>("/rate-limit"),
   },
 };
 
@@ -523,6 +777,80 @@ export interface SubscriptionStatus {
   stripe_customer_id?: string | null;
   has_active_subscription: boolean;
   publishable_key?: string | null;
+}
+
+export interface BillingUsage {
+  plan: string;
+  period_start: string;
+  period_end: string | null;
+  prompt_tokens: number;
+  completion_tokens: number;
+  cost_usd: number;
+  calls: number;
+  call_limit: number | null;
+  models: { model_id: string; prompt_tokens: number; completion_tokens: number; cost_usd: number; calls: number }[];
+}
+
+/* ---------- Enterprise ---------- */
+
+export interface ApiKeyItem {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  name: string;
+  key_prefix: string;
+  scopes: Record<string, any>;
+  enabled: boolean;
+  created_at?: string;
+  last_used_at?: string;
+}
+
+export interface ApiKeyCreated extends ApiKeyItem {
+  raw_key: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actor_id?: string;
+  action: string;
+  resource_type: string;
+  resource_id?: string;
+  details: Record<string, any>;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
+export interface OrgMember {
+  id: string;
+  email: string;
+  name?: string;
+  role: string;
+  created_at: string;
+}
+
+export interface OrgInvitation {
+  id: string;
+  organization_id: string;
+  invited_by: string;
+  email: string;
+  role: string;
+  token: string;
+  expires_at: string;
+  accepted_at?: string;
+  revoked_at?: string;
+  created_at: string;
+}
+
+export interface OrgUsage {
+  brands: number;
+  brand_limit: number | null;
+  runs_this_month: number;
+  run_limit: number | null;
+  members: number;
+  member_limit: number | null;
+  api_keys: number;
+  api_key_limit: number;
 }
 
 export const WS_BASE =

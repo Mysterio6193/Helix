@@ -6,11 +6,11 @@ Each handler returns a compiled `StateGraph` ready to invoke with a HelixState.
 from __future__ import annotations
 
 import time
-from typing import Any, Awaitable, Callable
-from uuid import UUID
+from collections.abc import Awaitable, Callable
 
 from helix.core.db import session_factory
-from helix.core.langfuse_client import get_langfuse, trace as lf_trace
+from helix.core.langfuse_client import get_langfuse
+from helix.core.langfuse_client import trace as lf_trace
 from helix.core.logging import get_logger
 from helix.core.observability import score_trace
 from helix.skills.learning import extract_learning
@@ -118,7 +118,7 @@ async def execute_run(ctx: RunContext) -> HelixState:
         # Check for promotion if brand is set and run succeeded
         if ctx.brand_id and final_status == "succeeded":
             from helix.skills.promotion import promote_specialization
-            unique_skills = set(lrn["skill_name"] for lrn in learnings if lrn.get("skill_name"))
+            unique_skills = {lrn["skill_name"] for lrn in learnings if lrn.get("skill_name")}
             for s_name in unique_skills:
                 try:
                     async with session_factory() as promote_session:

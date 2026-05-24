@@ -18,12 +18,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from helix.models.workflow import Asset
-from helix.skills.base import SkillContext, SkillResult, SkillHandler, register_skill_handler
+from helix.skills.base import SkillContext, SkillHandler, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
-
 
 # ---------------------------------------------------------------------------
 # Shared helpers

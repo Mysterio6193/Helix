@@ -11,6 +11,20 @@ import {
   useModelCatalog,
 } from "@/lib/llm";
 
+const PROVIDER_LABELS: Record<string, string> = {
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+  gemini: "Google Gemini",
+  openrouter: "OpenRouter (multi-provider)",
+  deepseek: "DeepSeek",
+  groq: "Groq",
+  mistral: "Mistral",
+  dashscope: "Alibaba Qwen (DashScope)",
+  replicate: "Replicate",
+  runway: "Runway",
+  veo: "Google Veo",
+};
+
 interface Props {
   capability: Capability;
   value: string | null;
@@ -136,7 +150,7 @@ export function ModelPicker({
           {grouped.map(([provider, items]) => (
             <div key={provider}>
               <div className="px-3 pt-2 pb-1 text-micro uppercase tracking-wide text-[color:var(--color-muted)]">
-                {provider}
+                {PROVIDER_LABELS[provider] ?? provider}
               </div>
               {items.map((m) => (
                 <button

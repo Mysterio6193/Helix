@@ -11,7 +11,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -113,7 +113,7 @@ async def list_skills(
         .group_by(SkillRegistry.parent_skill)
     )
     counts_res = await db.execute(counts_stmt)
-    specialization_counts = {parent: count for parent, count in counts_res.all()}
+    specialization_counts = dict(counts_res.all())
 
     total = len(rows)
     active = sum(1 for r in rows if not r.is_stub)
@@ -204,7 +204,7 @@ async def get_skill(
     learnings = list((await db.execute(lrn_stmt)).scalars().all())
     return {
         "skill": _skill_to_public(row, sc),
-        "learnings": [_learning_to_public(l) for l in learnings],
+        "learnings": [_learning_to_public(item) for item in learnings],
     }
 
 

@@ -3,13 +3,13 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import Literal, Any
+from typing import Any, Literal
 
+from helix.core.logging import get_logger
 from helix.critics.clip_scorer import score_clip
+from helix.critics.contrast_a11y import calculate_contrast
 from helix.critics.palette_scorer import score_palette
 from helix.critics.tone_classifier import score_tone
-from helix.critics.contrast_a11y import calculate_contrast
-from helix.core.logging import get_logger
 from helix.workflows.state import HelixState
 
 log = get_logger(__name__)
@@ -92,15 +92,15 @@ async def score(state: HelixState, candidate: dict[str, Any] | None) -> Critique
             copy_text_to_score = copy_data
         elif isinstance(copy_data, dict):
             texts = []
-            for k, v in copy_data.items():
+            for _k, v in copy_data.items():
                 if isinstance(v, str):
                     texts.append(v)
                 elif isinstance(v, dict):
                     opts = v.get("options") or v.get("variants") or []
                     if isinstance(opts, list):
-                        texts.extend([str(o) for o in opts if isinstance(o, (str, dict))])
+                        texts.extend([str(o) for o in opts if isinstance(o, str | dict)])
                     else:
-                        for sk, sv in v.items():
+                        for _sk, sv in v.items():
                             if isinstance(sv, str):
                                 texts.append(sv)
             copy_text_to_score = "\n".join(texts)
@@ -136,7 +136,7 @@ async def score(state: HelixState, candidate: dict[str, Any] | None) -> Critique
     if tasks:
         keys = list(tasks.keys())
         fut_results = await asyncio.gather(*[tasks[k] for k in keys], return_exceptions=True)
-        for k, res in zip(keys, fut_results):
+        for k, res in zip(keys, fut_results, strict=False):
             if isinstance(res, Exception):
                 log.error("critic.ensemble.scorer_failed", scorer=k, error=str(res))
                 results[k] = 0.75  # default neutral fallback

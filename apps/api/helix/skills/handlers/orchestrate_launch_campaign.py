@@ -11,7 +11,6 @@ from typing import Any
 from helix.skills.base import SkillContext, SkillResult, register_skill_handler
 from helix.tools.registry import get_tool
 
-
 _SYSTEM = (
     "You are a launch director for restaurant and food brands. Given a brand "
     "strategy and (optionally) a launch date, return ONLY a JSON object with "

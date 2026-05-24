@@ -1,6 +1,7 @@
 """Image generation adapters: OpenAI gpt-image-1, Replicate Flux + SDXL."""
 from __future__ import annotations
 
+import asyncio
 import base64
 from typing import Any
 
@@ -14,12 +15,13 @@ from helix.tools.base import Tool, ToolResult
 async def _upload(bytes_: bytes, ext: str = "png", prefix: str = "generated") -> tuple[str, int, int]:
     storage = S3Storage()
     key = storage.make_key(prefix, ext)
-    storage.put_bytes(key, bytes_, content_type=f"image/{ext}")
+    await asyncio.to_thread(storage.put_bytes, key, bytes_, content_type=f"image/{ext}")
     # Best-effort dimensions
     width = height = 0
     try:
-        from PIL import Image
         from io import BytesIO
+
+        from PIL import Image
 
         img = Image.open(BytesIO(bytes_))
         width, height = img.size

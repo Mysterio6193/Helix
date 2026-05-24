@@ -5,21 +5,29 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
   Activity,
+  BarChart3,
+  Beaker,
   Boxes,
   ChevronLeft,
+  Clapperboard,
   CreditCard,
   Cpu,
+  DollarSign,
+  FlaskConical,
+  Globe,
   Image as ImageIcon,
+  Key,
   LayoutDashboard,
   LogOut,
   Megaphone,
-  MessageSquare,
   Network,
   Package,
   PaintBucket,
   Rocket,
   Settings,
   Sparkles,
+  Target,
+  Users,
   UtensilsCrossed,
 } from "lucide-react";
 
@@ -33,24 +41,37 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
-  group: "core" | "deliver" | "infra";
+  group: "core" | "intelligence" | "deliver" | "infra";
 }
 
 const NAV: NavItem[] = [
-  { href: "/", label: "Overview", icon: LayoutDashboard, group: "core" },
-  { href: "/chat", label: "Chat", icon: MessageSquare, group: "core" },
+  { href: "/dashboard", label: "Command", icon: LayoutDashboard, group: "core" },
+  { href: "/", label: "Overview", icon: Sparkles, group: "core" },
   { href: "/brands", label: "Projects", icon: Sparkles, group: "core" },
   { href: "/workflows", label: "Workflows", icon: Activity, group: "core" },
   { href: "/assets", label: "Library", icon: ImageIcon, group: "core" },
   { href: "/memory", label: "Network", icon: Network, group: "core" },
+  { href: "/revenue", label: "Revenue", icon: DollarSign, group: "intelligence" },
+  { href: "/customers", label: "Customers", icon: Users, group: "intelligence" },
+  { href: "/competitors", label: "Competitors", icon: Target, group: "intelligence" },
+  { href: "/optimization", label: "Optimization", icon: Cpu, group: "intelligence" },
+  { href: "/playground", label: "Playground", icon: Beaker, group: "intelligence" },
+  { href: "/browser", label: "Browser", icon: Globe, group: "intelligence" },
+  { href: "/media", label: "Media", icon: Clapperboard, group: "intelligence" },
+  { href: "/experiments", label: "Experiments", icon: FlaskConical, group: "intelligence" },
   { href: "/studio", label: "Studio", icon: PaintBucket, group: "deliver" },
   { href: "/packaging", label: "Packaging", icon: Package, group: "deliver" },
   { href: "/websites", label: "Websites", icon: Boxes, group: "deliver" },
   { href: "/social", label: "Social", icon: Megaphone, group: "deliver" },
   { href: "/campaigns", label: "Campaigns", icon: Rocket, group: "deliver" },
+  { href: "/lab", label: "Lab", icon: BarChart3, group: "deliver" },
   { href: "/skills", label: "Skills", icon: UtensilsCrossed, group: "infra" },
   { href: "/settings/models", label: "Models", icon: Cpu, group: "infra" },
+  { href: "/settings/provider-keys", label: "Provider Keys", icon: Key, group: "infra" },
   { href: "/integrations", label: "Integrations", icon: Settings, group: "infra" },
+  { href: "/settings/admin", label: "Admin", icon: Users, group: "infra" },
+  { href: "/settings/api-keys", label: "API Keys", icon: Cpu, group: "infra" },
+  { href: "/settings/audit", label: "Audit Log", icon: Activity, group: "infra" },
   { href: "/settings/billing", label: "Billing", icon: CreditCard, group: "infra" },
 ];
 
@@ -284,7 +305,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname === "/sign-up" ||
     isMarketingRoute ||
     (pathname === "/pricing" && loaded && !user) ||
-    (pathname === "/" && loaded && !user);
+    (pathname === "/" && !user);
 
   if (isBypassRoute) {
     return (
@@ -366,49 +387,59 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-2 py-2">
-          {NAV.map((item) => {
-            const active =
-              pathname === item.href ||
-              (item.href !== "/" && pathname?.startsWith(item.href));
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-[10px] px-3 py-2 mb-0.5 text-label transition-all duration-150",
-                  active
-                    ? "text-ink"
-                    : "hover:bg-[rgba(255,255,255,0.05)]"
-                )}
-                style={
-                  active
-                    ? {
-                        background: "rgba(255,255,255,0.08)",
-                        color: "var(--color-ink)",
-                      }
-                    : { color: "var(--color-slate)" }
-                }
+          {["core", "intelligence", "deliver", "infra"].map((group) => (
+            <div key={group} className="mb-2">
+              <div
+                className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider"
+                style={{ color: "var(--color-stone)" }}
               >
-                <Icon
-                  size={15}
-                  className={active ? "text-[#f0f0f5]" : "text-[#6b6e7a]"}
-                />
-                <span>{item.label}</span>
-                {active && (
-                  <span
-                    className="ml-auto text-micro rounded-full px-2 py-0.5"
-                    style={{
-                      background: "rgba(255,255,255,0.12)",
-                      color: "var(--color-ink)",
-                    }}
+                {group === "infra" ? "System" : group}
+              </div>
+              {NAV.filter((item) => item.group === group).map((item) => {
+                const active =
+                  pathname === item.href ||
+                  (item.href !== "/" && pathname?.startsWith(item.href));
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-[10px] px-3 py-2 mb-0.5 text-label transition-all duration-150",
+                      active
+                        ? "text-ink"
+                        : "hover:bg-[rgba(255,255,255,0.05)]"
+                    )}
+                    style={
+                      active
+                        ? {
+                            background: "rgba(255,255,255,0.08)",
+                            color: "var(--color-ink)",
+                          }
+                        : { color: "var(--color-slate)" }
+                    }
                   >
-                    Active
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+                    <Icon
+                      size={15}
+                      className={active ? "text-[#f0f0f5]" : "text-[#6b6e7a]"}
+                    />
+                    <span>{item.label}</span>
+                    {active && (
+                      <span
+                        className="ml-auto text-micro rounded-full px-2 py-0.5"
+                        style={{
+                          background: "rgba(255,255,255,0.12)",
+                          color: "var(--color-ink)",
+                        }}
+                      >
+                        Active
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Live activity */}

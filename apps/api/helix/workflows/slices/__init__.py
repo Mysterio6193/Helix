@@ -16,6 +16,7 @@ for _mod in (
     "helix.workflows.slices.social_pack",
     "helix.workflows.slices.menu_design",
     "helix.workflows.slices.launch_campaign",
+    "helix.workflows.slices.boardroom_suite",
 ):
     try:
         importlib.import_module(_mod)

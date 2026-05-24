@@ -15,14 +15,17 @@ from helix.llm.catalog import (
 )
 from helix.llm.gateway import (
     GatewayError,
+    VideoResult,
     complete,
     generate_image,
+    generate_video,
     stream_complete,
 )
 
 __all__ = [
     "MODEL_CATALOG",
     "ModelSpec",
+    "VideoResult",
     "available_models",
     "get_model",
     "list_chat_models",
@@ -30,6 +33,7 @@ __all__ = [
     "list_video_models",
     "complete",
     "generate_image",
+    "generate_video",
     "stream_complete",
     "GatewayError",
 ]

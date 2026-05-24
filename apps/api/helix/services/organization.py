@@ -7,7 +7,7 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from helix.models.organization import Organization, Workspace, User
+from helix.models.organization import Organization, User, Workspace
 from helix.schemas.organization import WorkspaceCreate, WorkspaceUpdate
 
 
@@ -142,6 +142,10 @@ async def update_workspace(
     await db.flush()
     await db.refresh(workspace)
     return workspace
+
+async def get_user(db: AsyncSession, user_id: uuid.UUID) -> User | None:
+    return await db.get(User, user_id)
+
 
 async def delete_workspace(db: AsyncSession, workspace: Workspace) -> None:
     await db.delete(workspace)

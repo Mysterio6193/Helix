@@ -2,13 +2,11 @@
 from __future__ import annotations
 
 import json
-from typing import Any
-from uuid import UUID
 
-from helix.agents.base import Agent, AgentContext, AgentResult, register_agent
+from helix.agents.base import Agent, AgentContext, AgentResult
+from helix.core.logging import get_logger
 from helix.tools.registry import get_tool
 from helix.workflows.helpers import emit_event
-from helix.core.logging import get_logger
 
 log = get_logger(__name__)
 
@@ -52,7 +50,7 @@ Generate exactly 3 specific hook options during your turn and refine them as the
             "creative_director": """You are the AI Creative Director for Helix OS.
 Your objective is visual aesthetics, design school compliance, and visual hierarchy.
 You must choose a visual school (Minimal, Brutalist, Editorial) and pick visual style guides.
-You criticize visual choices and align layouts to brand guidelines. Make sure Open Design will render these visual schemas nicely.""",
+You criticize visual choices and align layouts to brand guidelines. Make sure Helix can render these visual schemas cleanly.""",
             
             "critic": """You are the AI Critic for Helix OS.
 Your objective is compliance, edge-case detection, brand-alignment, and risk analysis.
@@ -159,7 +157,7 @@ Do not include any prose, markdown block markup, or notes. Output only the JSON 
 
         cmo_messages = [
             {"role": "system", "content": cmo_system_prompt},
-            {"role": "user", "content": f"Analyze the debate history and output the final Campaign specification JSON. Debate history:\n" + "\n".join([m["content"] for m in debate_history if "content" in m])}
+            {"role": "user", "content": "Analyze the debate history and output the final Campaign specification JSON. Debate history:\n" + "\n".join([m["content"] for m in debate_history if "content" in m])}
         ]
 
         cmo_result = await llm.call(

@@ -11,6 +11,7 @@ import { Card, CardSubtitle, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { api, type AssetItem, type Brand } from "@/lib/api";
 import { formatRelative, shortId } from "@/lib/utils";
+import { SandboxedPreview } from "@/components/preview/sandboxed-preview";
 
 const CRITIQUE_PRESETS = [
   "Tighten the typography hierarchy",
@@ -38,7 +39,7 @@ export default function StudioPage() {
 
   const { data: assets } = useSWR<AssetItem[]>(
     brandId ? ["studio-assets", brandId] : null,
-    () => api.assets.list({ brand_id: brandId, kind: "image", limit: 100 }),
+    () => api.assets.list({ brand_id: brandId, limit: 100 }),
     { revalidateOnFocus: false },
   );
 
@@ -126,8 +127,22 @@ export default function StudioPage() {
                     : "border-[color:var(--color-hairline)] hover:border-[color:var(--color-stone)]"
                 }`}
               >
-                <div className="flex h-full w-full items-center justify-center bg-[color:var(--color-surface)]">
-                  <ImageIcon className="size-6 text-[color:var(--color-muted)]" />
+                <div className="flex h-full w-full items-center justify-center bg-[color:var(--color-surface)] relative">
+                  {a.storage_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={a.storage_url}
+                      alt={a.purpose || a.kind}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : a.kind === "website" ? (
+                    <div className="flex flex-col items-center gap-1.5 p-2 text-center text-xs font-medium text-[color:var(--color-ink)]">
+                      <span className="text-[10px] uppercase font-bold text-violet-500 dark:text-violet-400">Site</span>
+                      <span className="opacity-60 overflow-hidden text-ellipsis whitespace-nowrap w-full max-w-[65px]">{a.purpose || "Preview"}</span>
+                    </div>
+                  ) : (
+                    <ImageIcon className="size-6 text-[color:var(--color-muted)]" />
+                  )}
                 </div>
               </button>
             ))}
@@ -143,9 +158,25 @@ export default function StudioPage() {
               </p>
             </Card>
           ) : (
-            <Card className="overflow-hidden p-0">
-              <div className="flex aspect-square w-full items-center justify-center bg-[color:var(--color-surface)]">
-                <ImageIcon className="size-16 text-[color:var(--color-muted)]" />
+            <Card className="overflow-hidden p-0 h-[600px] flex flex-col">
+              <div className="flex-1 w-full relative bg-[color:var(--color-surface)] overflow-hidden">
+                {selected.kind === "website" && selected.text_content ? (
+                  <SandboxedPreview
+                    html={selected.text_content}
+                    title={(selected.metadata?.brand_name as string) || "Website Preview"}
+                  />
+                ) : selected.storage_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selected.storage_url}
+                    alt={selected.purpose || selected.kind}
+                    className="absolute inset-0 h-full w-full object-contain"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <ImageIcon className="size-16 text-[color:var(--color-muted)]" />
+                  </div>
+                )}
               </div>
               <div className="space-y-2 p-5">
                 <div className="flex flex-wrap items-center gap-1.5">

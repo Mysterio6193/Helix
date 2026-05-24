@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import secrets
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlencode
 
 import httpx
@@ -33,8 +33,8 @@ OAUTH_RETURN_COOKIE = "helix_oauth_return"
 
 class AuthStatus(BaseModel):
     authenticated: bool
-    provider: Optional[str] = None
-    user: Optional[dict] = None
+    provider: str | None = None
+    user: dict | None = None
 
 
 class AuthURL(BaseModel):
@@ -50,7 +50,7 @@ def _redirect_uri() -> str:
     return f"{settings.web_public_url.rstrip('/')}/api/proxy/auth/google/callback"
 
 
-def _safe_return_to(value: Optional[str]) -> str:
+def _safe_return_to(value: str | None) -> str:
     if not value:
         return "/"
     # Only allow same-origin paths
@@ -107,7 +107,7 @@ async def _ensure_default_org(db: AsyncSession) -> Organization:
     return org
 
 
-async def _upsert_user(db: AsyncSession, *, email: str, name: Optional[str], google_id: str, picture: Optional[str]) -> User:
+async def _upsert_user(db: AsyncSession, *, email: str, name: str | None, google_id: str, picture: str | None) -> User:
     org = await _ensure_default_org(db)
     stmt = select(User).where(User.email == email)
     user = (await db.execute(stmt)).scalar_one_or_none()
@@ -139,11 +139,11 @@ async def _upsert_user(db: AsyncSession, *, email: str, name: Optional[str], goo
 @router.get("/google/callback")
 async def google_callback(
     request: Request,
-    code: Optional[str] = None,
-    state: Optional[str] = None,
-    error: Optional[str] = None,
-    helix_oauth_state: Optional[str] = Cookie(default=None, alias=OAUTH_STATE_COOKIE),
-    helix_oauth_return: Optional[str] = Cookie(default=None, alias=OAUTH_RETURN_COOKIE),
+    code: str | None = None,
+    state: str | None = None,
+    error: str | None = None,
+    helix_oauth_state: str | None = Cookie(default=None, alias=OAUTH_STATE_COOKIE),
+    helix_oauth_return: str | None = Cookie(default=None, alias=OAUTH_RETURN_COOKIE),
     db: AsyncSession = Depends(get_db),
 ) -> Response:
     """Google OAuth callback — exchanges code for tokens, upserts user, issues session."""
@@ -215,7 +215,7 @@ async def google_callback(
 
 
 @router.get("/me", response_model=AuthStatus)
-async def me(user: Optional[User] = Depends(get_current_user)) -> AuthStatus:
+async def me(user: User | None = Depends(get_current_user)) -> AuthStatus:
     if user is None:
         return AuthStatus(authenticated=False)
     meta = user.metadata_ or {}

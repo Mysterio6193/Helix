@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  BarChart3,
   Boxes,
   Brain,
   CheckCircle2,
@@ -18,17 +19,21 @@ import {
   PaintBucket,
   Rocket,
   Sparkles,
+  TrendingUp,
+  Users,
   Workflow,
   Zap,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import {
   Reveal,
   RevealItem,
   RevealStagger,
 } from "@/components/marketing/reveal";
+import { TestimonialsSection } from "@/components/marketing/testimonials";
 
 /**
  * Public guest landing page. Rendered for unauthenticated visitors on `/`.
@@ -171,6 +176,75 @@ const SURFACES: Surface[] = [
 
 const HERO_VIDEO_SRC =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_115655_b4d9cd77-feed-43cd-a198-af78ebdf1f7a.mp4";
+
+interface PlatformStats {
+  brands: number;
+  workspaces: number;
+  runs: { total: number; completed: number; success_rate: number };
+  assets: { total: number; images: number; videos: number };
+  intelligence: { total_signals: number; signals_24h: number };
+}
+
+function LiveStats() {
+  const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/v1/public/stats")
+      .then((r) => r.json())
+      .then((data) => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 animate-pulse">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-16 rounded-xl bg-white/[0.04]" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!stats) return null;
+
+  const items = [
+    { label: "Brands", value: stats.brands, icon: Boxes },
+    { label: "Workspaces", value: stats.workspaces, icon: Users },
+    { label: "Runs", value: stats.runs.total, icon: TrendingUp },
+    { label: "Assets", value: stats.assets.total, icon: ImageIcon },
+    { label: "Signals", value: stats.intelligence.total_signals, icon: BarChart3 },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      {items.map((item) => {
+        const Icon = item.icon;
+        return (
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 rounded-xl border border-white/[0.05] bg-[#0d0e12]/50 backdrop-blur-md"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Icon size={14} className="text-[var(--color-signature)]" />
+              <span className="text-[10px] uppercase tracking-wider text-[var(--color-stone)]">
+                {item.label}
+              </span>
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {item.value.toLocaleString()}
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
 
 function HeroPreview() {
   return (
@@ -457,6 +531,18 @@ export function GuestLanding() {
         </motion.div>
       </section>
 
+      {/* ===== Live Stats ===== */}
+      <section className="relative max-w-7xl mx-auto w-full px-6 sm:px-8 py-8 border-t border-white/[0.04]">
+        <Reveal>
+          <div className="text-center mb-6">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-signature)]">
+              Live Platform
+            </p>
+          </div>
+        </Reveal>
+        <LiveStats />
+      </section>
+
       {/* ===== Capability grid ===== */}
       <section
         id="capabilities"
@@ -647,6 +733,9 @@ export function GuestLanding() {
           </RevealStagger>
         </div>
       </section>
+
+      {/* ===== Testimonials ===== */}
+      <TestimonialsSection />
 
       {/* ===== Final CTA ===== */}
       <section className="relative max-w-7xl mx-auto w-full px-6 sm:px-8 py-20 md:py-28">

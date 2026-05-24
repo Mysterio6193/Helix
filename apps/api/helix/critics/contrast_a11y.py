@@ -1,6 +1,8 @@
 """Deterministic WCAG 2.2 AA / AAA color contrast ratio calculator."""
 from __future__ import annotations
 
+from typing import Any
+
 
 def _parse_rgb(hex_str: str) -> tuple[float, float, float]:
     """Parse hex color (with or without #) to normalized RGB float tuple (0.0 - 1.0)."""

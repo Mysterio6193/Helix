@@ -16,10 +16,10 @@ from __future__ import annotations
 
 import json
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -50,7 +50,7 @@ def _seen_key(update_id: int) -> str:
     return f"helix:tg:seen:{update_id}"
 
 
-async def _load_bot_token(db: AsyncSession, workspace_id: uuid.UUID) -> Optional[dict]:
+async def _load_bot_token(db: AsyncSession, workspace_id: uuid.UUID) -> dict | None:
     stmt = select(ToolConnection).where(
         ToolConnection.workspace_id == workspace_id,
         ToolConnection.provider == "telegram",

@@ -24,10 +24,10 @@ class Organization(Base):
     created_at: Mapped[created_at_col]
     updated_at: Mapped[updated_at_col]
 
-    workspaces: Mapped[list["Workspace"]] = relationship(
+    workspaces: Mapped[list[Workspace]] = relationship(
         back_populates="organization", cascade="all, delete-orphan"
     )
-    users: Mapped[list["User"]] = relationship(
+    users: Mapped[list[User]] = relationship(
         back_populates="organization", cascade="all, delete-orphan"
     )
 
@@ -64,7 +64,7 @@ class Workspace(Base):
     updated_at: Mapped[updated_at_col]
 
     organization: Mapped[Organization] = relationship(back_populates="workspaces")
-    brands: Mapped[list["Brand"]] = relationship(
+    brands: Mapped[list[Brand]] = relationship(
         back_populates="workspace", cascade="all, delete-orphan"
     )
 

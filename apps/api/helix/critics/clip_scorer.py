@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import base64
-from typing import Any
 
 from helix.core.logging import get_logger
 from helix.tools.registry import get_tool

@@ -7,8 +7,6 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
-
 _api_env = Path(__file__).resolve().parents[2] / ".env"
 _root_env = Path(__file__).resolve().parents[4] / ".env"
 
@@ -48,6 +46,10 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     gemini_api_key: str = ""
     openrouter_api_key: str = ""
+    deepseek_api_key: str = ""
+    groq_api_key: str = ""
+    mistral_api_key: str = ""
+    dashscope_api_key: str = ""  # Alibaba Qwen via DashScope
 
     # Image / video providers
     replicate_api_token: str = ""
@@ -69,6 +71,10 @@ class Settings(BaseSettings):
     notion_client_secret: str = ""
     google_client_id: str = ""
     google_client_secret: str = ""
+
+    # Browser automation
+    browser_headless: bool = True
+    browser_executable_path: str = ""
 
     # Search
     brave_api_key: str = ""

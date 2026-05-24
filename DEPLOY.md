@@ -26,7 +26,7 @@ This is the end-to-end path from your laptop to a public SaaS at `https://app.yo
                                 │ workers pop runs
                                 │
                           ┌────────────────────┐
-                          │ workers (LangGraph)│
+                          │ workers            │
                           │ multi-replica      │
                           └────────────────────┘
 ```
