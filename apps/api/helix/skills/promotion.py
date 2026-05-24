@@ -59,7 +59,7 @@ async def promote_specialization(
         .where(
             SkillLearning.brand_id == brand_id,
             SkillLearning.skill_id == parent_skill.id,
-            SkillLearning.enabled is True
+            SkillLearning.enabled.is_(True)
         )
     )
     learnings = list(learnings_res.scalars().all())

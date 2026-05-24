@@ -75,7 +75,7 @@ async def publish_event(
     stmt = select(Trigger).where(
         Trigger.workspace_id == workspace_id,
         Trigger.event_kind == event_kind,
-        Trigger.enabled is True,
+        Trigger.enabled.is_(True),
     )
     if brand_id is not None:
         stmt = stmt.where((Trigger.brand_id == brand_id) | (Trigger.brand_id is None))

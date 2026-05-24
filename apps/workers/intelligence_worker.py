@@ -193,12 +193,14 @@ async def run_intelligence_worker():
                 # Seed data if needed
                 await seed_customer_segments(session)
 
-                # Generate mock data (only if no data exists)
-                result = await session.execute(
-                    select(PerformanceSnapshot).limit(1)
-                )
-                if not result.scalar_one_or_none():
-                    await generate_mock_performance_data(session)
+                # Generate mock data only if explicitly enabled
+                from helix.core.config import get_settings
+                if get_settings().generate_mock_data:
+                    result = await session.execute(
+                        select(PerformanceSnapshot).limit(1)
+                    )
+                    if not result.scalar_one_or_none():
+                        await generate_mock_performance_data(session)
 
                 # Generate signals
                 await generate_intelligence_signals(session)

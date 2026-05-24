@@ -1,11 +1,15 @@
 """FastAPI application entrypoint."""
 from __future__ import annotations
 
+import time
+import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from helix.api.v1 import api_router
 from helix.core.config import get_settings
@@ -16,6 +20,15 @@ from helix.schemas.common import HealthResponse
 settings = get_settings()
 configure_logging()
 log = get_logger("helix.main")
+
+
+class HelixException(Exception):
+    """Base exception for Helix domain errors."""
+
+    def __init__(self, message: str, status_code: int = 400) -> None:
+        self.message = message
+        self.status_code = status_code
+        super().__init__(message)
 
 
 @asynccontextmanager
@@ -85,13 +98,29 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     yield
 
-    # Stop file watcher if hot_reload is enabled
+    # Cleanup: stop file watcher
     if settings.worker_hot_reload:
         try:
             from helix.core.watcher import stop_watcher
             await stop_watcher()
         except Exception:
             log.exception("helix.api.watcher_stop_failed")
+
+    # Cleanup: close Redis connection
+    try:
+        from helix.core.redis import close_redis
+        await close_redis()
+        log.info("helix.api.redis_closed")
+    except Exception:
+        log.exception("helix.api.redis_close_failed")
+
+    # Cleanup: dispose database engine
+    try:
+        from helix.core.db import engine
+        await engine.dispose()
+        log.info("helix.api.db_disposed")
+    except Exception:
+        log.exception("helix.api.db_dispose_failed")
 
     log.info("helix.api.stopped")
 
@@ -103,6 +132,7 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/docs" if not settings.is_production else None,
     redoc_url="/redoc" if not settings.is_production else None,
+    openapi_url="/openapi.json" if not settings.is_production else None,
 )
 
 # CORS: dynamic per-environment. cors_origin_list always returns a concrete
@@ -118,21 +148,104 @@ app.add_middleware(
     max_age=settings.cors_max_age,
 )
 
+
+@app.middleware("http")
+async def request_context_middleware(request: Request, call_next) -> Response:
+    """Attach request ID and timing to every request."""
+    request_id = request.headers.get("x-request-id") or str(uuid.uuid4())[:8]
+    start_time = time.time()
+
+    # Bind request ID to structlog context
+    from structlog.contextvars import bind_contextvars
+    bind_contextvars(request_id=request_id)
+
+    try:
+        response = await call_next(request)
+    finally:
+        duration_ms = (time.time() - start_time) * 1000
+        log.info(
+            "http.request",
+            method=request.method,
+            path=request.url.path,
+            status_code=getattr(response, "status_code", 0),
+            duration_ms=round(duration_ms, 2),
+            request_id=request_id,
+        )
+
+    response.headers["x-request-id"] = request_id
+    response.headers["x-response-time-ms"] = str(round(duration_ms, 2))
+    return response
+
+
+# Global exception handlers
+@app.exception_handler(HelixException)
+async def helix_exception_handler(request: Request, exc: HelixException) -> JSONResponse:
+    log.warning("helix.error", message=exc.message, status=exc.status_code, path=request.url.path)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message, "type": "helix_error"},
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    log.exception("unhandled.error", path=request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal server error" if settings.is_production else str(exc),
+            "type": "internal_error",
+            "request_id": request.headers.get("x-request-id", "unknown"),
+        },
+    )
+
+
 app.include_router(api_router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["meta"])
 async def health() -> HealthResponse:
+    """Deep health check: pings database, Redis, and S3."""
+    services: dict[str, str] = {}
+
+    # Database connectivity
+    try:
+        from helix.core.db import engine
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        services["database"] = "connected"
+    except Exception:
+        services["database"] = "disconnected"
+
+    # Redis connectivity
+    try:
+        from helix.core.redis import get_redis
+        redis = get_redis()
+        await redis.ping()
+        services["redis"] = "connected"
+    except Exception:
+        services["redis"] = "disconnected"
+
+    # S3 connectivity
+    try:
+        from helix.core.storage import s3_client
+        await s3_client.head_bucket(Bucket=settings.s3_bucket)
+        services["s3"] = "connected"
+    except Exception:
+        services["s3"] = "disconnected"
+
+    # Langfuse
+    services["langfuse"] = "configured" if settings.langfuse_public_key else "missing"
+
+    # Overall status
+    critical = ["database", "redis"]
+    status = "ok" if all(services.get(s) == "connected" for s in critical) else "degraded"
+
     return HealthResponse(
-        status="ok",
+        status=status,
         version=settings.version,
         environment=settings.helix_env,
-        services={
-            "database": "configured" if settings.database_url else "missing",
-            "redis": "configured" if settings.redis_url else "missing",
-            "s3": "configured" if settings.s3_bucket else "missing",
-            "langfuse": "configured" if settings.langfuse_public_key else "missing",
-        },
+        services=services,
     )
 
 

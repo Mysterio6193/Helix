@@ -14,12 +14,62 @@ from dataclasses import dataclass
 from typing import Any
 
 import httpx
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from helix.core.config import get_settings
 from helix.core.logging import get_logger
 from helix.llm.catalog import ModelSpec, default_model, get_model
 
 log = get_logger(__name__)
+
+# Shared retry configuration for LLM HTTP calls
+_llm_retry = retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type((httpx.HTTPStatusError, httpx.ConnectError, httpx.TimeoutException)),
+    reraise=True,
+)
+
+
+async def _httpx_post_with_retry(
+    client: httpx.AsyncClient,
+    url: str,
+    headers: dict[str, str],
+    json: dict[str, Any],
+    provider: str,
+    model: str,
+) -> httpx.Response:
+    """Make an HTTP POST with tenacity retries."""
+    try:
+        resp = await client.post(url, headers=headers, json=json)
+        resp.raise_for_status()
+        return resp
+    except httpx.HTTPStatusError as exc:
+        log.warning(
+            "llm.provider_error",
+            provider=provider,
+            model=model,
+            status=exc.response.status_code,
+            url=url,
+        )
+        raise GatewayError(
+            f"{provider} returned {exc.response.status_code} for {model}"
+        ) from exc
+    except (httpx.ConnectError, httpx.TimeoutException) as exc:
+        log.warning(
+            "llm.provider_unreachable",
+            provider=provider,
+            model=model,
+            error=str(exc),
+        )
+        raise GatewayError(
+            f"{provider} unreachable for {model}: {exc}"
+        ) from exc
 
 
 class GatewayError(RuntimeError):
@@ -783,7 +833,7 @@ async def _deepseek_chat(
 
     async with httpx.AsyncClient(timeout=120) as client:
         resp = await client.post(
-            "https://api.mistral.ai/v1/chat/completions",
+            "https://api.deepseek.com/v1/chat/completions",
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
             json={
                 "model": spec.model,

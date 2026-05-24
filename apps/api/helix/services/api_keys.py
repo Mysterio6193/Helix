@@ -83,7 +83,7 @@ async def resolve_api_key(db: AsyncSession, raw_key: str) -> ApiKey | None:
     key_hash = _hash_key(raw_key)
     q = select(ApiKey).where(
         ApiKey.key_hash == key_hash,
-        ApiKey.enabled is True,
+        ApiKey.enabled.is_(True),
     )
     result = await db.execute(q)
     return result.scalar_one_or_none()

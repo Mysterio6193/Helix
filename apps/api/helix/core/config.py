@@ -80,6 +80,9 @@ class Settings(BaseSettings):
     # Search
     brave_api_key: str = ""
 
+    # Workers
+    generate_mock_data: bool = False
+
     # Stripe billing
     stripe_secret_key: str = ""
     stripe_publishable_key: str = ""
@@ -215,6 +218,12 @@ class Settings(BaseSettings):
             problems.append("WEB_PUBLIC_URL is non-https in production")
         if self.api_public_url.startswith("http://") and "localhost" not in self.api_public_url:
             problems.append("API_PUBLIC_URL is non-https in production")
+        if "helix:helix" in self.database_url:
+            problems.append("DATABASE_URL contains default credentials")
+        if self.s3_access_key == "minioadmin" or self.s3_secret_key == "minioadmin":
+            problems.append("S3 credentials are default MinIO values")
+        if self.redis_url == "redis://redis:6379/0" and "localhost" not in self.redis_url:
+            problems.append("REDIS_URL is the docker-compose default")
         if problems:
             raise RuntimeError("Unsafe production config: " + "; ".join(problems))
 

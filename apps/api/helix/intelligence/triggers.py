@@ -52,7 +52,7 @@ class EventTriggerEngine:
                 .where(
                     BrowserAutomation.workspace_id == signal.workspace_id,
                     BrowserAutomation.name == trigger["automation_name"],
-                    BrowserAutomation.enabled is True,
+                    BrowserAutomation.enabled.is_(True),
                 )
             )
             automation = result.scalar_one_or_none()

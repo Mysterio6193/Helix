@@ -11,8 +11,9 @@ from sqlalchemy.ext.asyncio import (
 
 from helix.core.config import settings
 
-engine_kwargs = {
+engine_kwargs: dict[str, object] = {
     "pool_pre_ping": True,
+    "pool_recycle": 3600,
     "echo": False,
 }
 if not settings.database_url.startswith("sqlite"):

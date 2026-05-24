@@ -304,7 +304,7 @@ class RulesEngine:
             .where(
                 IntelligenceSignal.workspace_id == workspace_id,
                 IntelligenceSignal.title.like(f"%{rule_id}%"),
-                IntelligenceSignal.auto_triggered is True,
+                IntelligenceSignal.auto_triggered.is_(True),
             )
             .order_by(desc(IntelligenceSignal.created_at))
             .limit(1)

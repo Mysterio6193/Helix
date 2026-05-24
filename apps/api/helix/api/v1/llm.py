@@ -14,18 +14,21 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
-from sqlalchemy.ext.asyncio import AsyncSession
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
-from helix.core.acl import assert_workspace_access, get_default_workspace_for_user
 from helix.core.billing import check_llm_quota
-from helix.core.db import get_db, get_session
+from helix.core.config import get_settings
+from helix.core.db import get_db
 from helix.core.logging import get_logger
 from helix.core.sessions import require_user
-from helix.llm import (
-    MODEL_CATALOG,
+from helix.llm.gateway import (
+    ChatResult,
     GatewayError,
-    available_models,
     complete,
     generate_image,
     generate_video,
@@ -262,7 +265,16 @@ async def playground_endpoint(
     return PlaygroundResponse(results=list(results_list))
 
 
+_llm_call_retry = retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type(GatewayError),
+    reraise=True,
+)
+
+
 @router.post("/complete", response_model=CompleteResponse)
+@_llm_call_retry
 async def complete_endpoint(
     payload: CompleteRequest,
     user: User = Depends(require_user),
