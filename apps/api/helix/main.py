@@ -150,6 +150,25 @@ app.add_middleware(
 
 
 @app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next) -> Response:
+    """Enforce rate limiting on all requests except health/metrics."""
+    if request.url.path in ("/health", "/metrics", "/"):
+        return await call_next(request)
+
+    from helix.core.rate_limiter import get_rate_limiter
+    limiter = get_rate_limiter()
+    key = request.headers.get("x-api-key") or request.cookies.get("helix_session") or request.client.host
+    allowed = limiter.check(key, max_requests=60)
+    if not allowed:
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Rate limit exceeded. Please try again later.", "type": "rate_limit"},
+            headers={"Retry-After": "60"},
+        )
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def request_context_middleware(request: Request, call_next) -> Response:
     """Attach request ID and timing to every request."""
     request_id = request.headers.get("x-request-id") or str(uuid.uuid4())[:8]

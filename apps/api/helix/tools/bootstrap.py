@@ -28,11 +28,15 @@ from helix.tools.adapters.productivity import (
     WebSearchTool,
 )
 from helix.tools.adapters.saas import (
+    Ga4ApiTool,
     KlaviyoApiTool,
+    LinkedInApiTool,
     MetaAdsApiTool,
     ShopifyApiTool,
     StripeApiTool,
     TwilioSmsTool,
+    WooCommerceApiTool,
+    YouTubeApiTool,
 )
 from helix.tools.adapters.storage import PgvectorMemoryTool, S3StorageTool
 from helix.tools.registry import clear_registry, list_tools, register_tool
@@ -62,10 +66,14 @@ _BUILTINS = (
     WebSearchTool,
     # SaaS / E-commerce
     ShopifyApiTool,
+    WooCommerceApiTool,
     KlaviyoApiTool,
     MetaAdsApiTool,
     StripeApiTool,
     TwilioSmsTool,
+    LinkedInApiTool,
+    YouTubeApiTool,
+    Ga4ApiTool,
     # Storage / memory
     S3StorageTool,
     PgvectorMemoryTool,

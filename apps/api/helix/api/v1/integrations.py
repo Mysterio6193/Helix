@@ -209,12 +209,9 @@ async def _verify_token(provider_key: str, token: str) -> dict[str, Any]:
     timeout are pulled from `settings` so this works offline / against
     fakes in tests.
     """
-    if token.startswith("mock"):
-        return {
-            "verified": True,
-            "account_label": f"Mock {provider_key.replace('_', ' ').title()}",
-            "raw": {"mock": True}
-        }
+    # Reject mock/placeholder tokens
+    if token.startswith("mock") or token in ("test", "placeholder", ""):
+        return {"verified": False, "error": "Invalid token. Please provide a real API key."}
 
     timeout = httpx.Timeout(settings.integration_verify_timeout_seconds)
     try:

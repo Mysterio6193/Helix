@@ -80,6 +80,12 @@ class Settings(BaseSettings):
     # Search
     brave_api_key: str = ""
 
+    # SaaS API versions (configurable so they can be bumped without code changes)
+    shopify_api_version: str = "2024-10"
+    klaviyo_api_revision: str = "2024-10-15"
+    meta_graph_api_version: str = "v19.0"
+    twilio_api_version: str = "2010-04-01"
+
     # Workers
     generate_mock_data: bool = False
 

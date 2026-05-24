@@ -9,6 +9,8 @@ import time
 from collections import defaultdict
 from functools import lru_cache
 
+from fastapi import Request
+
 
 class MemorySlidingWindowCounter:
     """Per-key sliding window counter with configurable RPM.
@@ -57,3 +59,19 @@ RATE_LIMITS = {
 
 def get_rate_limit_for_plan(plan: str) -> int:
     return RATE_LIMITS.get(plan, 20)
+
+
+async def rate_limit_dependency(request: Request) -> None:
+    """FastAPI dependency that enforces rate limiting.
+
+    Uses x-api-key header or session cookie as the rate limit key.
+    Raises 429 if limit exceeded.
+    """
+    from fastapi import HTTPException
+
+    limiter = get_rate_limiter()
+    key = request.headers.get("x-api-key") or request.cookies.get("helix_session") or request.client.host
+    # Default to free tier limit for unauthenticated requests
+    allowed = limiter.check(key, max_requests=RATE_LIMITS["free"])
+    if not allowed:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Please try again later.")

@@ -18,10 +18,13 @@ GET  /api/v1/mcp/models                — convenience: list chat/image/video ca
 """
 from __future__ import annotations
 
+import asyncio
 import inspect
+import json
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from helix.core.config import settings
@@ -238,3 +241,38 @@ async def list_mcp_models(user: User = Depends(require_user)) -> list[McpModelEn
         )
         for spec in MODEL_CATALOG.values()
     ]
+
+
+# ---------------------------------------------------------------------------
+# SSE transport for MCP streaming
+# ---------------------------------------------------------------------------
+
+
+@router.get("/sse")
+async def mcp_sse(
+    request: Request,
+    user: User = Depends(require_user),
+) -> StreamingResponse:
+    """Server-Sent Events endpoint for MCP tool calls.
+
+    Clients POST tool calls to /mcp/tools/{name}/call and receive
+    results via SSE. This enables streaming for long-running tools.
+    """
+    async def event_generator():
+        yield f"event: connected\ndata: {json.dumps({'user': str(user.id), 'protocol': _MCP_PROTOCOL_VERSION})}\n\n"
+        while True:
+            if await request.is_disconnected():
+                break
+            # Keep-alive heartbeat every 30s
+            yield f"event: heartbeat\ndata: {json.dumps({'ts': asyncio.get_event_loop().time()})}\n\n"
+            await asyncio.sleep(30)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )

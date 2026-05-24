@@ -1,22 +1,35 @@
-"""SaaS tool adapters: Shopify, Klaviyo, Meta Ads, Stripe, Twilio.
+"""SaaS tool adapters: Shopify, Klaviyo, Meta Ads, Stripe, Twilio, LinkedIn, YouTube, GA4.
 
-These tools support both live execution (hitting the real SaaS APIs if valid credentials
-are retrieved from tool_connections) and high-fidelity mock execution (returning structured,
-realistic commerce data if running in sandbox/development or with mock tokens).
+All tools require valid credentials from tool_connections. No mock fallbacks.
+Missing credentials = clear error response.
 """
 from __future__ import annotations
 
-import time
 import uuid
 from typing import Any
 
 import httpx
 
+from helix.core.config import get_settings
 from helix.core.logging import get_logger
 from helix.integrations.resolver import get_integration_credentials
 from helix.tools.base import Tool, ToolResult
 
 log = get_logger("helix.tools.saas")
+settings = get_settings()
+
+
+def _resolve_creds(session: Any, workspace_id: Any, provider: str) -> dict[str, str] | None:
+    """Resolve credentials or return None."""
+    if session is None or workspace_id is None:
+        return None
+    try:
+        return get_integration_credentials(
+            session, workspace_id=uuid.UUID(str(workspace_id)), provider=provider
+        )
+    except Exception:
+        log.warning(f"{provider}_credentials_resolve_failed")
+        return None
 
 
 class ShopifyApiTool(Tool):
@@ -36,129 +49,43 @@ class ShopifyApiTool(Tool):
         limit: int = 10,
         **_: Any,
     ) -> ToolResult:
-        token = "mock"
-        shop_domain = "mock-shop"
+        creds = _resolve_creds(session, workspace_id, "shopify")
+        if not creds:
+            return ToolResult(ok=False, error="Shopify not connected. Go to Integrations > Shopify to connect your store.")
 
-        # Try to resolve real credentials from workspace db connection if provided
-        if session is not None and workspace_id is not None:
+        token = creds.get("token") or creds.get("access_token")
+        shop_domain = creds.get("shop_domain") or creds.get("extra", {}).get("shop_domain")
+        if not token or not shop_domain:
+            return ToolResult(ok=False, error="Shopify credentials incomplete. Reconnect your store.")
+
+        api_version = settings.shopify_api_version or "2024-10"
+        headers = {
+            "X-Shopify-Access-Token": token,
+            "Content-Type": "application/json",
+        }
+        base = f"https://{shop_domain}/admin/api/{api_version}"
+
+        async with httpx.AsyncClient(timeout=30) as client:
             try:
-                creds = await get_integration_credentials(
-                    session, workspace_id=uuid.UUID(str(workspace_id)), provider="shopify"
-                )
-                if creds:
-                    token = creds.get("token") or creds.get("access_token") or "mock"
-                    shop_domain = creds.get("shop_domain") or creds.get("extra", {}).get("shop_domain") or "mock-shop"
-            except Exception:
-                log.warning("shopify_credentials_resolve_failed, defaulting to mock")
+                if op == "get_shop":
+                    r = await client.get(f"{base}/shop.json", headers=headers)
+                elif op == "list_products":
+                    r = await client.get(f"{base}/products.json?limit={limit}", headers=headers)
+                elif op == "create_product":
+                    if not product_data:
+                        return ToolResult(ok=False, error="product_data required")
+                    r = await client.post(f"{base}/products.json", headers=headers, json={"product": product_data})
+                elif op == "list_orders":
+                    r = await client.get(f"{base}/orders.json?limit={limit}", headers=headers)
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
 
-        is_mock = token.startswith("mock") or token == "mock" or shop_domain.startswith("mock")
-
-        if not is_mock:
-            # Real Shopify admin API call
-            headers = {
-                "X-Shopify-Access-Token": token,
-                "Content-Type": "application/json",
-            }
-            async with httpx.AsyncClient(timeout=30) as client:
-                try:
-                    if op == "get_shop":
-                        r = await client.get(f"https://{shop_domain}/admin/api/2024-04/shop.json", headers=headers)
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Shopify error {r.status_code}: {r.text}")
-                    elif op == "list_products":
-                        r = await client.get(f"https://{shop_domain}/admin/api/2024-04/products.json?limit={limit}", headers=headers)
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Shopify error {r.status_code}: {r.text}")
-                    elif op == "create_product":
-                        if not product_data:
-                            return ToolResult(ok=False, error="product_data required")
-                        r = await client.post(
-                            f"https://{shop_domain}/admin/api/2024-04/products.json",
-                            headers=headers,
-                            json={"product": product_data},
-                        )
-                        if r.status_code in (200, 201):
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Shopify error {r.status_code}: {r.text}")
-                    elif op == "list_orders":
-                        r = await client.get(f"https://{shop_domain}/admin/api/2024-04/orders.json?limit={limit}", headers=headers)
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Shopify error {r.status_code}: {r.text}")
-                except Exception as exc:
-                    log.exception("shopify_api_request_failed")
-                    return ToolResult(ok=False, error=f"Shopify communication failed: {str(exc)}")
-
-        # High-Fidelity Mock Response
-        log.info("shopify_api_mock_execution", op=op)
-        if op == "get_shop":
-            return ToolResult(ok=True, data={
-                "shop": {
-                    "id": 89457294,
-                    "name": "Cozy Diner Gourmet",
-                    "email": "hello@cozydiner.com",
-                    "domain": "cozydiner.myshopify.com",
-                    "currency": "USD",
-                    "country_name": "United States",
-                    "plan_name": "shopify_plus"
-                }
-            })
-        elif op == "list_products":
-            return ToolResult(ok=True, data={
-                "products": [
-                    {
-                        "id": 1001,
-                        "title": "Gourmet Truffle Burger Combo",
-                        "body_html": "Juicy black angus beef patty, white truffle aioli, melted swiss cheese, and caramelized onions on toasted brioche.",
-                        "vendor": "Cozy Diner Gourmet",
-                        "product_type": "Food & Beverage",
-                        "status": "active",
-                        "variants": [{"id": 2001, "price": "18.99", "inventory_quantity": 42}],
-                        "images": [{"id": 3001, "src": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"}]
-                    },
-                    {
-                        "id": 1002,
-                        "title": "Artisanal Crispy Chicken Sandwich",
-                        "body_html": "Buttermilk fried chicken breast, house pickles, garlic aioli, spicy slaw, served on a warm bun.",
-                        "vendor": "Cozy Diner Gourmet",
-                        "product_type": "Food & Beverage",
-                        "status": "active",
-                        "variants": [{"id": 2002, "price": "15.49", "inventory_quantity": 80}],
-                        "images": [{"id": 3002, "src": "https://images.unsplash.com/photo-1627662236973-4f8259fa2441?w=500"}]
-                    }
-                ]
-            })
-        elif op == "create_product":
-            pdata = product_data or {"title": "New Mock Product", "price": "9.99"}
-            return ToolResult(ok=True, data={
-                "product": {
-                    "id": int(time.time()),
-                    "title": pdata.get("title", "New Product"),
-                    "body_html": pdata.get("body_html", "Delicious product description."),
-                    "status": "active",
-                    "variants": [{"id": int(time.time()) + 1, "price": pdata.get("price", "9.99"), "inventory_quantity": 100}]
-                }
-            })
-        elif op == "list_orders":
-            return ToolResult(ok=True, data={
-                "orders": [
-                    {
-                        "id": 5001,
-                        "name": "#1001",
-                        "email": "customer@example.com",
-                        "total_price": "34.48",
-                        "financial_status": "paid",
-                        "fulfillment_status": "fulfilled",
-                        "line_items": [
-                            {"id": 6001, "title": "Gourmet Truffle Burger Combo", "quantity": 1, "price": "18.99"},
-                            {"id": 6002, "title": "Artisanal Crispy Chicken Sandwich", "quantity": 1, "price": "15.49"}
-                        ]
-                    }
-                ]
-            })
-        return ToolResult(ok=False, error=f"unknown op: {op}")
+                if r.status_code in (200, 201):
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"Shopify error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("shopify_api_request_failed")
+                return ToolResult(ok=False, error=f"Shopify communication failed: {exc}")
 
 
 class KlaviyoApiTool(Tool):
@@ -177,123 +104,41 @@ class KlaviyoApiTool(Tool):
         campaign_data: dict | None = None,
         **_: Any,
     ) -> ToolResult:
-        token = "mock"
+        creds = _resolve_creds(session, workspace_id, "klaviyo")
+        if not creds:
+            return ToolResult(ok=False, error="Klaviyo not connected. Go to Integrations > Klaviyo to connect.")
 
-        if session is not None and workspace_id is not None:
+        token = creds.get("token")
+        if not token:
+            return ToolResult(ok=False, error="Klaviyo credentials incomplete. Reconnect your account.")
+
+        api_revision = settings.klaviyo_api_revision or "2024-10-15"
+        headers = {
+            "Authorization": f"Klaviyo-API-Key {token}",
+            "Accept": "application/json",
+            "revision": api_revision,
+            "Content-Type": "application/json",
+        }
+
+        async with httpx.AsyncClient(timeout=30) as client:
             try:
-                creds = await get_integration_credentials(
-                    session, workspace_id=uuid.UUID(str(workspace_id)), provider="klaviyo"
-                )
-                if creds:
-                    token = creds.get("token") or "mock"
-            except Exception:
-                log.warning("klaviyo_credentials_resolve_failed, defaulting to mock")
+                if op == "list_profiles":
+                    r = await client.get("https://a.klaviyo.com/api/profiles/", headers=headers)
+                elif op == "list_campaigns":
+                    r = await client.get("https://a.klaviyo.com/api/campaigns/", headers=headers)
+                elif op == "create_campaign":
+                    if not campaign_data:
+                        return ToolResult(ok=False, error="campaign_data required")
+                    r = await client.post("https://a.klaviyo.com/api/campaigns/", headers=headers, json=campaign_data)
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
 
-        is_mock = token.startswith("mock") or token == "mock"
-
-        if not is_mock:
-            headers = {
-                "Authorization": f"Klaviyo-API-Key {token}",
-                "Accept": "application/json",
-                "revision": "2024-05-15",
-                "Content-Type": "application/json",
-            }
-            async with httpx.AsyncClient(timeout=30) as client:
-                try:
-                    if op == "list_profiles":
-                        r = await client.get("https://a.klaviyo.com/api/profiles/", headers=headers)
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Klaviyo error {r.status_code}: {r.text}")
-                    elif op == "list_campaigns":
-                        r = await client.get("https://a.klaviyo.com/api/campaigns/", headers=headers)
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Klaviyo error {r.status_code}: {r.text}")
-                    elif op == "create_campaign":
-                        if not campaign_data:
-                            return ToolResult(ok=False, error="campaign_data required")
-                        r = await client.post(
-                            "https://a.klaviyo.com/api/campaigns/",
-                            headers=headers,
-                            json=campaign_data,
-                        )
-                        if r.status_code in (200, 201, 202):
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Klaviyo error {r.status_code}: {r.text}")
-                except Exception as exc:
-                    log.exception("klaviyo_api_request_failed")
-                    return ToolResult(ok=False, error=f"Klaviyo communication failed: {str(exc)}")
-
-        # High-Fidelity Mock Response
-        log.info("klaviyo_api_mock_execution", op=op)
-        if op == "list_profiles":
-            return ToolResult(ok=True, data={
-                "data": [
-                    {
-                        "type": "profile",
-                        "id": "01GD5V0294JSAJK",
-                        "attributes": {
-                            "email": "sarah.jones@example.com",
-                            "first_name": "Sarah",
-                            "last_name": "Jones",
-                            "phone_number": "+15550199",
-                            "created": "2026-01-10T14:32:00Z"
-                        }
-                    },
-                    {
-                        "type": "profile",
-                        "id": "01GD5V0304JSAKL",
-                        "attributes": {
-                            "email": "michael.smith@example.com",
-                            "first_name": "Michael",
-                            "last_name": "Smith",
-                            "phone_number": "+15550201",
-                            "created": "2026-02-15T09:12:00Z"
-                        }
-                    }
-                ]
-            })
-        elif op == "list_campaigns":
-            return ToolResult(ok=True, data={
-                "data": [
-                    {
-                        "type": "campaign",
-                        "id": "01HN7K8234B",
-                        "attributes": {
-                            "name": "Spring Burger Launch Promotion",
-                            "status": "sent",
-                            "scheduled_at": "2026-04-12T10:00:00Z"
-                        }
-                    }
-                ]
-            })
-        elif op == "create_campaign":
-            cname = (campaign_data or {}).get("name", "New Mock Campaign")
-            return ToolResult(ok=True, data={
-                "data": {
-                    "type": "campaign",
-                    "id": "01HN7K9999B",
-                    "attributes": {
-                        "name": cname,
-                        "status": "draft",
-                        "created_at": "2026-05-24T00:00:00Z"
-                    }
-                }
-            })
-        elif op == "get_campaign_analytics":
-            return ToolResult(ok=True, data={
-                "analytics": {
-                    "campaign_id": "01HN7K8234B",
-                    "recipient_count": 1250,
-                    "open_rate": 0.384,  # 38.4%
-                    "click_rate": 0.089,  # 8.9%
-                    "bounce_rate": 0.005,  # 0.5%
-                    "conversion_value_usd": 1245.50,
-                    "conversions": 62
-                }
-            })
-        return ToolResult(ok=False, error=f"unknown op: {op}")
+                if r.status_code in (200, 201, 202):
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"Klaviyo error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("klaviyo_api_request_failed")
+                return ToolResult(ok=False, error=f"Klaviyo communication failed: {exc}")
 
 
 class MetaAdsApiTool(Tool):
@@ -314,96 +159,42 @@ class MetaAdsApiTool(Tool):
         ad_creative_url: str | None = None,
         **_: Any,
     ) -> ToolResult:
-        token = "mock"
-        ad_account_id = "act_mock"
+        creds = _resolve_creds(session, workspace_id, "meta_ads")
+        if not creds:
+            return ToolResult(ok=False, error="Meta Ads not connected. Go to Integrations > Meta Ads to connect.")
 
-        if session is not None and workspace_id is not None:
+        token = creds.get("token")
+        ad_account_id = creds.get("ad_account_id")
+        if not token or not ad_account_id:
+            return ToolResult(ok=False, error="Meta Ads credentials incomplete. Reconnect your account.")
+
+        api_version = settings.meta_graph_api_version or "v19.0"
+        base = f"https://graph.facebook.com/{api_version}"
+
+        async with httpx.AsyncClient(timeout=30) as client:
             try:
-                creds = await get_integration_credentials(
-                    session, workspace_id=uuid.UUID(str(workspace_id)), provider="meta_ads"
-                )
-                if creds:
-                    token = creds.get("token") or "mock"
-                    ad_account_id = creds.get("ad_account_id") or "act_mock"
-            except Exception:
-                log.warning("meta_ads_credentials_resolve_failed, defaulting to mock")
+                if op == "get_ad_account":
+                    r = await client.get(f"{base}/{ad_account_id}?fields=name,account_status,currency&access_token={token}")
+                elif op == "create_campaign":
+                    r = await client.post(
+                        f"{base}/{ad_account_id}/campaigns",
+                        params={"access_token": token},
+                        json={
+                            "name": campaign_name,
+                            "objective": "OUTCOME_SALES",
+                            "status": "PAUSED",
+                            "special_ad_categories": "[]"
+                        }
+                    )
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
 
-        is_mock = token.startswith("mock") or token == "mock" or ad_account_id.startswith("act_mock")
-
-        if not is_mock:
-            async with httpx.AsyncClient(timeout=30) as client:
-                try:
-                    if op == "get_ad_account":
-                        r = await client.get(f"https://graph.facebook.com/v19.0/{ad_account_id}?fields=name,account_status,currency&access_token={token}")
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Meta error {r.status_code}: {r.text}")
-                    elif op == "create_campaign":
-                        r = await client.post(
-                            f"https://graph.facebook.com/v19.0/{ad_account_id}/campaigns",
-                            params={"access_token": token},
-                            json={
-                                "name": campaign_name,
-                                "objective": "OUTCOME_SALES",
-                                "status": "PAUSED",
-                                "special_ad_categories": "[]"
-                            }
-                        )
-                        if r.status_code in (200, 201):
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Meta error {r.status_code}: {r.text}")
-                except Exception as exc:
-                    log.exception("meta_ads_api_request_failed")
-                    return ToolResult(ok=False, error=f"Meta communication failed: {str(exc)}")
-
-        # High-Fidelity Mock Response
-        log.info("meta_ads_api_mock_execution", op=op)
-        if op == "get_ad_account":
-            return ToolResult(ok=True, data={
-                "id": "act_89472938",
-                "name": "Cozy Diner Gourmet Main Ad Set",
-                "account_status": 1,  # Active
-                "currency": "USD"
-            })
-        elif op == "create_campaign":
-            return ToolResult(ok=True, data={
-                "id": f"2385938{int(time.time() % 10000)}",
-                "name": campaign_name,
-                "status": "PAUSED",
-                "objective": "OUTCOME_SALES",
-                "daily_budget": str(budget * 100)  # Cents
-            })
-        elif op == "create_ad_set":
-            return ToolResult(ok=True, data={
-                "id": f"2385940{int(time.time() % 10000)}",
-                "name": f"AdSet: {campaign_name} - Broad Geo",
-                "targeting": {"geo_locations": {"countries": ["US"]}, "age_min": 18},
-                "status": "ACTIVE"
-            })
-        elif op == "create_ad":
-            return ToolResult(ok=True, data={
-                "id": f"2385950{int(time.time() % 10000)}",
-                "name": "Ad: Truffle Burger High-CTR Video",
-                "creative": {"image_url": ad_creative_url or "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500"}
-            })
-        elif op == "get_campaign_insights":
-            return ToolResult(ok=True, data={
-                "data": [
-                    {
-                        "campaign_id": "2385938024",
-                        "campaign_name": campaign_name,
-                        "impressions": "48924",
-                        "clicks": "1248",
-                        "ctr": "0.0255",  # 2.55%
-                        "spend": "340.50",
-                        "cpc": "0.27",
-                        "conversions": "84",
-                        "purchase_value": "1596.00",
-                        "roas": "4.68"
-                    }
-                ]
-            })
-        return ToolResult(ok=False, error=f"unknown op: {op}")
+                if r.status_code in (200, 201):
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"Meta error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("meta_ads_api_request_failed")
+                return ToolResult(ok=False, error=f"Meta communication failed: {exc}")
 
 
 class StripeApiTool(Tool):
@@ -423,79 +214,36 @@ class StripeApiTool(Tool):
         amount_cents: int = 1000,
         **_: Any,
     ) -> ToolResult:
-        token = "mock"
+        creds = _resolve_creds(session, workspace_id, "stripe")
+        if not creds:
+            return ToolResult(ok=False, error="Stripe not connected. Go to Integrations > Stripe to connect.")
 
-        if session is not None and workspace_id is not None:
+        token = creds.get("token")
+        if not token:
+            return ToolResult(ok=False, error="Stripe credentials incomplete. Reconnect your account.")
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        async with httpx.AsyncClient(timeout=30) as client:
             try:
-                creds = await get_integration_credentials(
-                    session, workspace_id=uuid.UUID(str(workspace_id)), provider="stripe"
-                )
-                if creds:
-                    token = creds.get("token") or "mock"
-            except Exception:
-                log.warning("stripe_credentials_resolve_failed, defaulting to mock")
+                if op == "get_balance":
+                    r = await client.get("https://api.stripe.com/v1/balance", headers=headers)
+                elif op == "create_customer":
+                    if not customer_email:
+                        return ToolResult(ok=False, error="customer_email required")
+                    r = await client.post("https://api.stripe.com/v1/customers", headers=headers, data={"email": customer_email})
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
 
-        is_mock = token.startswith("mock") or token == "mock"
-
-        if not is_mock:
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/x-www-form-urlencoded",
-            }
-            async with httpx.AsyncClient(timeout=30) as client:
-                try:
-                    if op == "get_balance":
-                        r = await client.get("https://api.stripe.com/v1/balance", headers=headers)
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Stripe error {r.status_code}: {r.text}")
-                    elif op == "create_customer":
-                        if not customer_email:
-                            return ToolResult(ok=False, error="customer_email required")
-                        r = await client.post(
-                            "https://api.stripe.com/v1/customers",
-                            headers=headers,
-                            data={"email": customer_email},
-                        )
-                        if r.status_code == 200:
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Stripe error {r.status_code}: {r.text}")
-                except Exception as exc:
-                    log.exception("stripe_api_request_failed")
-                    return ToolResult(ok=False, error=f"Stripe communication failed: {str(exc)}")
-
-        # High-Fidelity Mock Response
-        log.info("stripe_api_mock_execution", op=op)
-        if op == "get_balance":
-            return ToolResult(ok=True, data={
-                "object": "balance",
-                "available": [{"amount": 1459450, "currency": "usd"}],
-                "pending": [{"amount": 234500, "currency": "usd"}]
-            })
-        elif op == "create_customer":
-            return ToolResult(ok=True, data={
-                "id": f"cus_O{int(time.time())}",
-                "object": "customer",
-                "email": customer_email or "guest@example.com",
-                "currency": "usd"
-            })
-        elif op == "create_charge":
-            return ToolResult(ok=True, data={
-                "id": f"ch_{int(time.time())}",
-                "object": "charge",
-                "amount": amount_cents,
-                "paid": True,
-                "status": "succeeded"
-            })
-        elif op == "create_invoice":
-            return ToolResult(ok=True, data={
-                "id": f"in_{int(time.time())}",
-                "object": "invoice",
-                "amount_due": amount_cents,
-                "customer": "cus_mock123",
-                "status": "draft"
-            })
-        return ToolResult(ok=False, error=f"unknown op: {op}")
+                if r.status_code == 200:
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"Stripe error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("stripe_api_request_failed")
+                return ToolResult(ok=False, error=f"Stripe communication failed: {exc}")
 
 
 class TwilioSmsTool(Tool):
@@ -515,59 +263,211 @@ class TwilioSmsTool(Tool):
         body: str = "Helix OS autonomous creative update!",
         **_: Any,
     ) -> ToolResult:
-        account_sid = "mock_sid"
-        auth_token = "mock_token"
+        creds = _resolve_creds(session, workspace_id, "twilio")
+        if not creds:
+            return ToolResult(ok=False, error="Twilio not connected. Go to Integrations > Twilio to connect.")
 
-        if session is not None and workspace_id is not None:
+        account_sid = creds.get("account_sid") or creds.get("token")
+        auth_token = creds.get("auth_token")
+        if not account_sid or not auth_token:
+            return ToolResult(ok=False, error="Twilio credentials incomplete. Reconnect your account.")
+
+        auth = (account_sid, auth_token)
+        async with httpx.AsyncClient(timeout=30) as client:
             try:
-                creds = await get_integration_credentials(
-                    session, workspace_id=uuid.UUID(str(workspace_id)), provider="twilio"
-                )
-                if creds:
-                    account_sid = creds.get("account_sid") or creds.get("token") or "mock_sid"
-                    auth_token = creds.get("auth_token") or "mock_token"
-            except Exception:
-                log.warning("twilio_credentials_resolve_failed, defaulting to mock")
+                if op == "send_sms":
+                    r = await client.post(
+                        f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json",
+                        auth=auth,
+                        data={"To": to, "From": "+18885550199", "Body": body},
+                    )
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
 
-        is_mock = account_sid.startswith("mock") or account_sid == "mock_sid"
+                if r.status_code in (200, 201):
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"Twilio error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("twilio_api_request_failed")
+                return ToolResult(ok=False, error=f"Twilio communication failed: {exc}")
 
-        if not is_mock:
-            auth = (account_sid, auth_token)
-            async with httpx.AsyncClient(timeout=30) as client:
-                try:
-                    if op == "send_sms":
-                        r = await client.post(
-                            f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json",
-                            auth=auth,
-                            data={"To": to, "From": "+18885550199", "Body": body},
-                        )
-                        if r.status_code in (200, 201):
-                            return ToolResult(ok=True, data=r.json())
-                        return ToolResult(ok=False, error=f"Twilio error {r.status_code}: {r.text}")
-                except Exception as exc:
-                    log.exception("twilio_api_request_failed")
-                    return ToolResult(ok=False, error=f"Twilio communication failed: {str(exc)}")
 
-        # High-Fidelity Mock Response
-        log.info("twilio_sms_mock_execution", op=op)
-        if op == "send_sms":
-            return ToolResult(ok=True, data={
-                "sid": f"SM{uuid.uuid4().hex[:30]}",
-                "status": "queued",
-                "to": to,
-                "body": body,
-                "date_created": "2026-05-24T00:00:00Z"
-            })
-        elif op == "list_messages":
-            return ToolResult(ok=True, data={
-                "messages": [
-                    {
-                        "sid": "SM385929384",
-                        "status": "delivered",
-                        "to": to,
-                        "body": body,
-                        "date_sent": "2026-05-24T00:01:00Z"
+class LinkedInApiTool(Tool):
+    name = "linkedin_api"
+    description = (
+        "Interact with LinkedIn API: post company updates, manage ad campaigns, "
+        "and fetch company page analytics."
+    )
+
+    async def _call(
+        self,
+        *,
+        op: str,
+        session: Any = None,
+        workspace_id: Any = None,
+        text: str = "",
+        **_: Any,
+    ) -> ToolResult:
+        creds = _resolve_creds(session, workspace_id, "linkedin")
+        if not creds:
+            return ToolResult(ok=False, error="LinkedIn not connected. Go to Integrations > LinkedIn to connect.")
+
+        token = creds.get("token")
+        if not token:
+            return ToolResult(ok=False, error="LinkedIn credentials incomplete. Reconnect your account.")
+
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json", "X-Restli-Protocol-Version": "2.0.0"}
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            try:
+                if op == "get_profile":
+                    r = await client.get("https://api.linkedin.com/v2/me", headers=headers)
+                elif op == "share_post":
+                    if not text:
+                        return ToolResult(ok=False, error="text required")
+                    payload = {"author": "urn:li:person:me", "lifecycleState": "PUBLISHED", "specificContent": {"com.linkedin.ugc.ShareContent": {"shareCommentary": {"text": text}, "shareMediaCategory": "NONE"}}, "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}}
+                    r = await client.post("https://api.linkedin.com/v2/ugcPosts", headers=headers, json=payload)
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
+
+                if r.status_code in (200, 201):
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"LinkedIn error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("linkedin_api_request_failed")
+                return ToolResult(ok=False, error=f"LinkedIn communication failed: {exc}")
+
+
+class YouTubeApiTool(Tool):
+    name = "youtube_api"
+    description = (
+        "Interact with YouTube Data API: upload videos, manage playlists, "
+        "and fetch channel analytics."
+    )
+
+    async def _call(
+        self,
+        *,
+        op: str,
+        session: Any = None,
+        workspace_id: Any = None,
+        **_: Any,
+    ) -> ToolResult:
+        creds = _resolve_creds(session, workspace_id, "youtube")
+        if not creds:
+            return ToolResult(ok=False, error="YouTube not connected. Go to Integrations > YouTube to connect.")
+
+        token = creds.get("token")
+        if not token:
+            return ToolResult(ok=False, error="YouTube credentials incomplete. Reconnect your account.")
+
+        headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            try:
+                if op == "get_channel":
+                    r = await client.get("https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true", headers=headers)
+                elif op == "list_videos":
+                    r = await client.get("https://www.googleapis.com/youtube/v3/search?part=snippet&forMine=true&type=video&maxResults=10", headers=headers)
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
+
+                if r.status_code == 200:
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"YouTube error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("youtube_api_request_failed")
+                return ToolResult(ok=False, error=f"YouTube communication failed: {exc}")
+
+
+class Ga4ApiTool(Tool):
+    name = "ga4_api"
+    description = (
+        "Interact with Google Analytics 4 Data API: run reports, fetch audience metrics, "
+        "and get conversion data."
+    )
+
+    async def _call(
+        self,
+        *,
+        op: str,
+        session: Any = None,
+        workspace_id: Any = None,
+        property_id: str = "",
+        **_: Any,
+    ) -> ToolResult:
+        creds = _resolve_creds(session, workspace_id, "ga4")
+        if not creds:
+            return ToolResult(ok=False, error="GA4 not connected. Go to Integrations > GA4 to connect.")
+
+        token = creds.get("token")
+        if not token:
+            return ToolResult(ok=False, error="GA4 credentials incomplete. Reconnect your account.")
+
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            try:
+                if op == "run_report":
+                    if not property_id:
+                        return ToolResult(ok=False, error="property_id required")
+                    payload = {
+                        "dateRanges": [{"startDate": "7daysAgo", "endDate": "today"}],
+                        "metrics": [{"name": "sessions"}, {"name": "activeUsers"}, {"name": "conversions"}],
                     }
-                ]
-            })
-        return ToolResult(ok=False, error=f"unknown op: {op}")
+                    r = await client.post(f"https://analyticsdata.googleapis.com/v1beta/properties/{property_id}:runReport", headers=headers, json=payload)
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
+
+                if r.status_code == 200:
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"GA4 error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("ga4_api_request_failed")
+                return ToolResult(ok=False, error=f"GA4 communication failed: {exc}")
+
+
+class WooCommerceApiTool(Tool):
+    name = "woocommerce_api"
+    description = (
+        "Interact with WooCommerce REST API: list products, orders, customers, "
+        "and create coupons."
+    )
+
+    async def _call(
+        self,
+        *,
+        op: str,
+        session: Any = None,
+        workspace_id: Any = None,
+        product_data: dict | None = None,
+        limit: int = 10,
+        **_: Any,
+    ) -> ToolResult:
+        creds = _resolve_creds(session, workspace_id, "woocommerce")
+        if not creds:
+            return ToolResult(ok=False, error="WooCommerce not connected. Go to Integrations > WooCommerce to connect.")
+
+        consumer_key = creds.get("consumer_key")
+        consumer_secret = creds.get("consumer_secret")
+        store_url = creds.get("store_url")
+        if not consumer_key or not consumer_secret or not store_url:
+            return ToolResult(ok=False, error="WooCommerce credentials incomplete. Reconnect your store.")
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            try:
+                if op == "list_products":
+                    r = await client.get(f"{store_url}/wp-json/wc/v3/products?per_page={limit}", auth=(consumer_key, consumer_secret))
+                elif op == "create_product":
+                    if not product_data:
+                        return ToolResult(ok=False, error="product_data required")
+                    r = await client.post(f"{store_url}/wp-json/wc/v3/products", auth=(consumer_key, consumer_secret), json=product_data)
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
+
+                if r.status_code in (200, 201):
+                    return ToolResult(ok=True, data=r.json())
+                return ToolResult(ok=False, error=f"WooCommerce error {r.status_code}: {r.text}")
+            except Exception as exc:
+                log.exception("woocommerce_api_request_failed")
+                return ToolResult(ok=False, error=f"WooCommerce communication failed: {exc}")

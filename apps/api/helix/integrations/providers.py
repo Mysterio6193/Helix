@@ -300,7 +300,7 @@ _TOKEN: dict[str, OAuthProvider] = {
         description="WordPress-based store + REST API.",
         auth_kind="token",
         token_label="Consumer Key:Secret",
-        coming_soon=True,
+        token_help_url="https://woocommerce.com/document/rest-api/",
     ),
     # Marketing
     "mailchimp": OAuthProvider(
@@ -353,7 +353,6 @@ _TOKEN: dict[str, OAuthProvider] = {
         auth_kind="token",
         token_label="Access Token",
         token_help_url="https://developer.linkedin.com/",
-        coming_soon=True,
     ),
     "twitter": OAuthProvider(
         key="twitter",
@@ -383,7 +382,7 @@ _TOKEN: dict[str, OAuthProvider] = {
         description="Upload videos, manage channel, comments.",
         auth_kind="token",
         token_label="OAuth Access Token",
-        coming_soon=True,
+        token_help_url="https://developers.google.com/youtube/registering_an_application",
     ),
     "pinterest": OAuthProvider(
         key="pinterest",
@@ -465,7 +464,7 @@ _TOKEN: dict[str, OAuthProvider] = {
         description="Web + app traffic insights.",
         auth_kind="token",
         token_label="OAuth Access Token",
-        coming_soon=True,
+        token_help_url="https://developers.google.com/analytics/devguides/reporting/data/v1",
     ),
 }
 
