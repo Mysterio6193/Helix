@@ -76,86 +76,76 @@ Organization
       └── Automations
 ```
 
+## Documentation
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — System architecture, data flow, layer breakdown, design decisions
+- **[DEPLOY.md](DEPLOY.md)** — End-to-end deployment guide (Fly.io, Render, Vercel)
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — Development setup, conventions, PR process
+- **[CHANGELOG.md](CHANGELOG.md)** — Release history (14 phases)
+
 ## Tech Stack
 
-- Web: Next.js 15, TypeScript, Tailwind CSS, shadcn-style primitives, Framer Motion
-- API: FastAPI, Python, async SQLAlchemy
-- Database: PostgreSQL with vector search
-- Workers: Redis-backed background execution
-- Storage: S3-compatible object storage
-- Observability: structured logs, traces, metrics, and audit history
-- Deployment: Docker and Kubernetes-ready manifests
+- **Web**: Next.js 15, TypeScript, Tailwind CSS, shadcn-style primitives, Framer Motion
+- **API**: FastAPI, Python 3.11+, async SQLAlchemy, Pydantic
+- **Database**: PostgreSQL 16+ with pgvector (vector search)
+- **LLM Gateway**: 60 models across 11 providers (OpenAI, Anthropic, Google, OpenRouter, DeepSeek, Groq, Mistral, DashScope, Replicate, Runway, Veo)
+- **Workers**: Redis-backed background execution (APScheduler + Redis queue)
+- **Storage**: S3-compatible object storage (MinIO local, Cloudflare R2/S3 prod)
+- **Agent Framework**: LangGraph with 15 specialized agents and critic ensemble
+- **Observability**: Structured logs (structlog), traces (Langfuse), Prometheus metrics, audit history
+- **Automation**: Playwright headless Chromium with simulated fallback
+- **Billing**: Stripe subscription management with usage-based metering
+- **Deployment**: Docker, Kubernetes manifests, Fly.io, Render, Vercel, Railway
+
+## Models
+
+60 models across 11 providers. See `apps/api/helix/llm/catalog.py` for the full catalog.
+
+| Provider | Models |
+|----------|--------|
+| OpenAI | GPT-5, GPT-5 mini, o4-mini, o3, o3-mini, GPT-4o, o1, DALL-E 3 |
+| Anthropic | Opus 4.6, Sonnet 4.5, Haiku 4.5 |
+| Google | Gemini 2.5 Pro, 2.5 Flash, 2.0 Flash, Imagen 3, Veo 2 |
+| OpenRouter | DeepSeek V3/R1, Llama 3.3 70B, Qwen 2.5 Coder, Mistral Large, Chinese models |
+| DashScope | Qwen Max/Plus/Turbo, Qwen3-235B |
+| DeepSeek | V3, R1 |
+| Groq | Llama 3.3 70B, DeepSeek R1 Distill 70B, Qwen 2.5 32B |
+| Replicate | Image generation |
+| Runway | Gen-3 video generation |
+
+BYOK: Users can bring their own API keys via `/settings/provider-keys`.
 
 ## Local Development
 
-Prerequisites:
-
-- Node.js 18+ and pnpm 9+
-- Python 3.10+
-- Docker and Docker Compose
-
-Install dependencies:
+Prerequisites: Node.js 18+, pnpm 9+, Python 3.11+, Docker + Compose
 
 ```bash
+# 1. Install dependencies
 pnpm install
-```
 
-Start infrastructure:
+# 2. Start infrastructure
+cd infra && docker compose up -d postgres redis minio && cd ..
 
-```bash
-cd infra
-docker compose up -d postgres redis minio
-cd ..
-```
-
-Start the API:
-
-```bash
+# 3. Set up the API
 cd apps/api
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+cp ../../.env.example .env   # edit with your keys
 alembic upgrade head
 uvicorn helix.main:app --host 0.0.0.0 --port 8000 --reload
-```
 
-Start workers:
-
-```bash
+# 4. Start workers (separate terminal)
 cd apps/api
-source venv/bin/activate
+source .venv/bin/activate
 python -m apps.workers.run_worker
-```
 
-Start the web app:
-
-```bash
+# 5. Start the web app (separate terminal)
 cd apps/web
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
-
-## Environment
-
-Copy the example environment file and configure the providers you need:
-
-```bash
-cp .env.example .env
-```
-
-Common variables:
-
-```env
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/helix
-REDIS_URL=redis://localhost:6379/0
-OPENAI_API_KEY=...
-ANTHROPIC_API_KEY=...
-GEMINI_API_KEY=...
-GITHUB_TOKEN=...
-VERCEL_TOKEN=...
-TELEGRAM_BOT_TOKEN=...
-```
 
 ## Product Rule
 
