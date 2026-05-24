@@ -1,0 +1,21 @@
+# Ignore build and workspace cache folders
+.venv
+**/node_modules
+**/.next
+.next
+node_modules
+.mypy_cache
+.ruff_cache
+.turbo
+dist
+out
+
+# Ignore local databases and APIs
+apps/api/.venv
+helix.db
+helix.db.bak
+
+# Ignore large vendor backups and unused zip archives
+open-design-extracted
+open-design.zip
+packages/vendor

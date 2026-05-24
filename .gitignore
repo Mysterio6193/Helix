@@ -43,3 +43,4 @@ langfuse_data/
 
 # Generated artifacts
 apps/api/alembic/.cache/
+.vercel
