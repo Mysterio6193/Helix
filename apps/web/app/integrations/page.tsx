@@ -34,6 +34,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   restaurant: "Restaurant & Hospitality",
   ecommerce: "E-commerce & Payments",
   marketing: "Marketing & CRM",
+  crm: "CRM & Sales",
+  support: "Customer Support",
+  finance: "Finance & Accounting",
   productivity: "Productivity & Ops",
   analytics: "Analytics & Data",
   design: "Design & Content",
@@ -47,6 +50,9 @@ const CATEGORY_ORDER = [
   "restaurant",
   "ecommerce",
   "marketing",
+  "crm",
+  "support",
+  "finance",
   "productivity",
   "analytics",
   "design",
@@ -114,6 +120,22 @@ const TOOL_COUNTS: Record<string, number> = {
   amplitude: 1,
   google_calendar: 1,
   aws: 1,
+  // POS Systems
+  petpooja: 1,
+  clover: 1,
+  lightspeed: 1,
+  revel: 1,
+  chownow: 1,
+  ordermark: 1,
+  slice: 1,
+  // Zoho Suite
+  zoho_crm: 1,
+  zoho_books: 1,
+  zoho_campaigns: 1,
+  zoho_desk: 1,
+  zoho_inventory: 1,
+  zoho_subscriptions: 1,
+  zoho_projects: 1,
 };
 
 function fetcher(workspaceId: string) {

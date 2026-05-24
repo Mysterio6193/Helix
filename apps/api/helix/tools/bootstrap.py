@@ -62,6 +62,15 @@ from helix.tools.adapters.new_integrations import (
     WixApiTool,
     ZendeskApiTool,
 )
+from helix.tools.adapters.pos_systems import (
+    ChowNowApiTool,
+    CloverApiTool,
+    LightspeedApiTool,
+    OrdermarkApiTool,
+    PetpoojaApiTool,
+    RevelApiTool,
+    SliceApiTool,
+)
 from helix.tools.adapters.productivity import (
     CanvaConnectTool,
     FigmaApiTool,
@@ -99,6 +108,15 @@ from helix.tools.adapters.social import (
     ThreadsApiTool,
     TikTokApiTool,
     TwitterApiTool,
+)
+from helix.tools.adapters.zoho import (
+    ZohoBooksApiTool,
+    ZohoCampaignsApiTool,
+    ZohoCrmApiTool,
+    ZohoDeskApiTool,
+    ZohoInventoryApiTool,
+    ZohoProjectsApiTool,
+    ZohoSubscriptionsApiTool,
 )
 from helix.tools.registry import clear_registry, list_tools, register_tool
 
@@ -195,6 +213,22 @@ _BUILTINS = (
     AmplitudeApiTool,
     GoogleCalendarApiTool,
     AwsApiTool,
+    # POS Systems
+    PetpoojaApiTool,
+    CloverApiTool,
+    LightspeedApiTool,
+    RevelApiTool,
+    ChowNowApiTool,
+    OrdermarkApiTool,
+    SliceApiTool,
+    # Zoho Suite
+    ZohoCrmApiTool,
+    ZohoBooksApiTool,
+    ZohoCampaignsApiTool,
+    ZohoDeskApiTool,
+    ZohoInventoryApiTool,
+    ZohoSubscriptionsApiTool,
+    ZohoProjectsApiTool,
 )
 
 

@@ -2,19 +2,34 @@
   <img src="assets/banner.png" alt="Helix OS" width="100%">
 </p>
 
-# Helix 🧬
+<h1 align="center">Helix 🧬</h1>
 
 <p align="center">
-  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Docs-helix--os.app-F0734A?style=for-the-badge" alt="Documentation"></a>
-  <a href="https://github.com/Mysterio6193/Helix/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-purple?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Release-v0.2.0--Beta-blue?style=for-the-badge" alt="Release"></a>
-  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Architecture-Autonomous%20CMO-emerald?style=for-the-badge" alt="Architecture"></a>
-  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Sandbox-Active--Offline-blueviolet?style=for-the-badge" alt="Sandbox Mode"></a>
+  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Docs-helix--os.app-F0734A?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentation"></a>
+  <a href="https://github.com/Mysterio6193/Helix/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-8A2BE2?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Release-v0.3.0--Integration--Overhaul-00C896?style=for-the-badge" alt="Release"></a>
+  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Architecture-Autonomous%20CMO-FF6A4D?style=for-the-badge" alt="Architecture"></a>
+  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Integrations-76%20Providers-FFB347?style=for-the-badge" alt="Integrations"></a>
+  <a href="https://github.com/Mysterio6193/Helix"><img src="https://img.shields.io/badge/Sandbox-Active--Offline-8B5CF6?style=for-the-badge" alt="Sandbox Mode"></a>
 </p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js">
+  <img src="https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Ruff-0%20Errors-FFD700?style=flat-square" alt="Ruff">
+  <img src="https://img.shields.io/badge/TypeScript-0%20Errors-3178C6?style=flat-square" alt="TypeScript 0 errors">
+  <img src="https://img.shields.io/badge/LLM-60+%20Models-FF6A4D?style=flat-square" alt="LLM Models">
+  <img src="https://img.shields.io/badge/MCP-JSON--RPC%202.0-00D4AA?style=flat-square" alt="MCP">
+</p>
+
+---
 
 **Helix is an AI-native commerce operating system: an autonomous CMO, creative agency, growth team, and operator unified under a single stunning surface.**
 
-Unlike traditional prompt playgrounds or generic chatbots, Helix is fully goal-oriented and event-driven. Users define brand identities, API integrations, constraints, and key performance indicators (KPIs). Helix then autonomously plans, renders creative assets, deploys websites, executes marketing campaigns, monitors performance, and continuously optimizes operations using closed-loop learning.
+Unlike traditional prompt playgrounds or generic chatbots, Helix is fully goal-oriented and event-driven. Users define brand identities, **76+ API integrations**, constraints, and key performance indicators (KPIs). Helix then autonomously plans, renders creative assets, deploys websites, executes marketing campaigns, monitors performance, and continuously optimizes operations using closed-loop learning.
 
 ---
 
@@ -54,6 +69,33 @@ Unlike traditional prompt playgrounds or generic chatbots, Helix is fully goal-o
   <td>Event-driven timeline triggered by ROAS drops, CTR fatigue, or competitor price changes.</td>
 </tr>
 </table>
+
+---
+
+## 🔌 Integration Platform
+
+Helix ships with **76+ real API integrations** — no mocks, no demo data, no silent degradation. Every adapter makes real HTTP calls or fails with a clear error message.
+
+| Category | Providers |
+|---|---|
+| **Messaging & Chat** | Slack, Discord, WhatsApp Business, Telegram, Meta Pages, Instagram |
+| **Restaurant & POS** | Toast, Square, DoorDash, UberEats, Yelp, Petpooja, Clover, Lightspeed, Revel, ChowNow, Ordermark, Slice |
+| **E-commerce & Payments** | Shopify, WooCommerce, Stripe, PayPal, QuickBooks, Squarespace, Wix, BigCommerce, TikTok Shop |
+| **Marketing & CRM** | Mailchimp, Klaviyo, HubSpot, SendGrid, Google Business, LinkedIn, Meta Ads, Google Ads, Snapchat Ads, Reddit Ads, Semrush, Ahrefs, Google Search Console |
+| **CRM & Support** | Salesforce, Zendesk, Intercom, Jira, Zoho CRM |
+| **Social Media** | Twitter/X, TikTok, Pinterest, Threads, YouTube |
+| **Analytics & Data** | GA4, PostHog, Mixpanel, Segment, Amplitude, Google Search Console |
+| **Productivity & Ops** | Airtable, Linear, Asana, Calendly, Notion, Figma, Canva, Microsoft 365, Typeform, Webflow, Framer, Loom, Google Calendar |
+| **Finance & Accounting** | Zoho Books, Zoho Subscriptions, QuickBooks |
+| **Zoho Suite** | Zoho CRM, Zoho Books, Zoho Campaigns, Zoho Desk, Zoho Inventory, Zoho Subscriptions, Zoho Projects |
+| **Reservations** | Resy, OpenTable |
+| **Infrastructure** | AWS, Vercel, GitHub |
+
+Features:
+- **Token health monitoring** — `/integrations/health` endpoint checks every connected provider with real API calls
+- **MCP Protocol Support** — JSON-RPC 2.0 with SSE and stdio transports for AI client tool access
+- **Consistent adapter pattern** — `resolve creds → validate → API call → ToolResult`, every adapter the same
+- **Byok-ready** — providers accept user-supplied API tokens with per-key validation
 
 ---
 
@@ -193,6 +235,31 @@ The system will be accessible locally at **[http://localhost:3000](http://localh
 *   **[DEPLOY.md](DEPLOY.md)** — Complete production deployment guide (Fly.io, Render, Vercel).
 *   **[CONTRIBUTING.md](CONTRIBUTING.md)** — Contribution pathways, PR criteria, and conventions.
 *   **[CHANGELOG.md](CHANGELOG.md)** — Core development phases and features history.
+
+---
+
+## 🏗️ Repository Structure
+
+```
+helix/
+├── apps/
+│   ├── api/              # Python FastAPI backend (helix/)
+│   │   ├── helix/
+│   │   │   ├── api/      # FastAPI route modules
+│   │   │   ├── tools/    # Tool adapter system (76+ adapters)
+│   │   │   ├── agents/   # LangGraph agent orchestration
+│   │   │   ├── llm/      # LLM gateway (60+ models)
+│   │   │   └── services/ # Business logic + integration health
+│   ├── web/              # Next.js 15 frontend
+│   └── workers/          # Background workers
+├── packages/
+│   ├── types/            # Shared TypeScript types
+│   └── vendor/           # Vendored third-party packages
+├── skills/               # 116 marketing/creative skills
+├── design-systems/       # 50 design system definitions
+├── infra/                # Docker, Postgres configs
+└── .planning/            # Development roadmap & plans
+```
 
 ---
 

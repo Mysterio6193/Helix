@@ -15,11 +15,11 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator
+from typing import Any
 
 from helix.core.logging import get_logger
-from helix.integrations.resolver import get_integration_credentials
 from helix.tools.base import Tool, ToolResult
 from helix.tools.registry import list_tools
 

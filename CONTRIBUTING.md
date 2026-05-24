@@ -92,6 +92,26 @@ components. Each slice:
 5. Update relevant documentation (ARCHITECTURE.md, DEPLOY.md, etc.)
 6. Create a PR with a clear description of changes
 
+## Adding a New Integration
+
+Integrations follow a strict real-API-only policy — no mocks, no synthetic data, no silent degradation.
+
+1. **Add the provider** to `apps/api/helix/integrations/providers.py`:
+   - Choose `TOKEN_PROVIDER` (API key) or `OAUTH_PROVIDER` (OAuth flow)
+   - Set a unique `key`, `display_name`, `category`, and `description`
+   - Include `token_help_url` pointing to real docs
+2. **Create the tool adapter** in `tools/adapters/` following the consistent pattern:
+   - `_resolve_creds(session, workspace_id, provider)` — resolve credentials from DB
+   - Return `ToolResult(ok=False, error="X not connected.")` if creds are missing — no graceful degradation
+   - Make real HTTP API calls only — no mock endpoints or hardcoded data
+3. **Register the adapter** in `apps/api/helix/tools/bootstrap.py`:
+   - Import the tool class
+   - Add it to the `_BUILTINS` tuple
+4. **Update the frontend** `TOOL_COUNTS` map in `apps/web/app/integrations/page.tsx`
+5. **Add a health check** to `apps/api/helix/services/integration_health.py` if possible
+6. **Verify**: `ruff check` and `tsc --noEmit --strict` must pass with 0 errors
+7. **Update docs**: List the integration in README.md and CHANGELOG.md
+
 ## Adding a New Model
 
 1. Add a `ModelSpec` entry to `apps/api/helix/llm/catalog.py`

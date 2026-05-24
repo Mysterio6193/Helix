@@ -120,6 +120,70 @@ gateway, creative intelligence, browser automation, and billing.
 
 ---
 
+## 0.3.0 (2026-05-25)
+
+### Integration Overhaul — 76+ Real API Providers
+
+You can now connect **76+ real integrations** — every adapter makes real HTTP calls or fails with a clear "not connected" error. Zero mocks, zero demo data, zero coming-soon placeholders.
+
+#### Foundation Fixes
+- Twilio now appears in the integration catalog (was missing despite existing tool adapter)
+- Shopify verification now hits the real Admin API (`GET /admin/api/{version}/shop.json`)
+- 6 "coming soon" integrations unblocked: Threads, Resy, OpenTable, TikTok, Pinterest, Mixpanel — all have real adapters now
+
+#### 26 Tool Adapters for Dead Connections
+- **Messaging**: Slack, Discord, WhatsApp Business, Meta Pages, Instagram
+- **Restaurant/POS**: Toast, Square, DoorDash, UberEats, Yelp
+- **Marketing**: Mailchimp, HubSpot, SendGrid, Google Business
+- **Productivity**: Airtable, Linear, Asana, Calendly
+- **Social/Analytics**: Twitter/X, PostHog, Threads, TikTok, Pinterest, Mixpanel, Resy, OpenTable
+
+#### 25 New High-Value Integrations
+- **CRM/Support**: Salesforce, Zendesk, Intercom, Jira
+- **Marketing/Ads**: Google Ads, Snapchat Ads, Reddit Ads, Semrush, Ahrefs, Google Search Console
+- **E-commerce/Payments**: PayPal, QuickBooks, Squarespace, Wix, BigCommerce, TikTok Shop
+- **Productivity/Design**: Microsoft 365, Typeform, Webflow, Framer, Loom
+- **Analytics/Data**: Segment, Amplitude, Google Calendar, AWS
+
+#### POS Systems
+- Petpooja — Indian restaurant POS (menu, orders, billing)
+- Clover — POS payments, orders, inventory
+- Lightspeed — retail and restaurant management
+- Revel Systems — iPad POS with CRM
+- ChowNow — online ordering for restaurants
+- Ordermark — delivery aggregation and order management
+- Slice — pizza delivery platform
+
+#### Zoho Suite
+- Zoho CRM — leads, contacts, deals, pipelines
+- Zoho Books — invoicing, expenses, accounting
+- Zoho Campaigns — email marketing and automation
+- Zoho Desk — customer support and ticketing
+- Zoho Inventory — stock, orders, warehouses
+- Zoho Subscriptions — recurring billing
+- Zoho Projects — project management and time tracking
+- Datacenter-aware base URLs (`zohoapis.com`/`.in`/`.eu`) with `Zoho-oauthtoken` header auth
+
+#### MCP Protocol Support
+- JSON-RPC 2.0 protocol implementation
+- SSE transport for remote AI clients (e.g., IDEs)
+- Stdio transport for local AI clients (e.g., Claude Desktop)
+- Tool listing and calling via the registry
+- Singleton factory with lifecycle-decoupled transport
+
+#### Token Health Monitoring
+- `services/integration_health.py` — per-provider health check definitions
+- `GET /integrations/health` — real API probe per connected provider
+- Frontend health badges: green (healthy), yellow (expired), red (error)
+
+#### Frontend Updates
+- Tool count badges on each integration card
+- Health status badges with color-coded indicators
+- "Test Connection" button to trigger health checks
+- Category labels and ordering for CRM, support, finance sections
+
+---
+
 ## 0.2.0 (2026-05-24)
 
 ### UI/UX Polish & Resilient Sandbox Upgrades

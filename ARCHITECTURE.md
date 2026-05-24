@@ -85,7 +85,7 @@ Key patterns:
 
 ### 2. API Gateway (`apps/api/helix/api/v1/`)
 
-26 route modules, each a FastAPI `APIRouter`:
+27 route modules, each a FastAPI `APIRouter`:
 
 | Module | Prefix | Purpose |
 |--------|--------|---------|
@@ -209,7 +209,58 @@ Real Playwright integration:
 - `StagehandTool` — drives Shopify/Meta/Klaviyo page automation
 - Graceful fallback to simulated mode when Playwright/Chromium unavailable
 
-### 8. Database Model (`apps/api/helix/models/`)
+### 8. Tool Adapter System (`apps/api/helix/tools/`)
+
+A scalable tool adapter architecture powering **76+ real API integrations**:
+
+```
+tools/
+├── adapters/
+│   ├── messaging.py         # Slack, Discord, WhatsApp, Meta Pages, Instagram
+│   ├── restaurant.py        # Toast, Square, DoorDash, UberEats, Yelp
+│   ├── marketing.py         # Mailchimp, HubSpot, SendGrid, Google Business
+│   ├── social.py            # Twitter/X, PostHog, Threads, TikTok, Pinterest
+│   ├── productivity_extra.py # Airtable, Linear, Asana, Calendly
+│   ├── analytics_extra.py   # Mixpanel, Resy, OpenTable
+│   ├── new_integrations.py  # 25 adapters: Salesforce, Zendesk, Google Ads, etc.
+│   ├── pos_systems.py      # Petpooja, Clover, Lightspeed, Revel, ChowNow, Ordermark, Slice
+│   ├── zoho.py             # Zoho CRM, Books, Campaigns, Desk, Inventory, Subscriptions, Projects
+│   ├── mcp_server.py       # JSON-RPC 2.0 MCP server (SSE + stdio transports)
+│   ├── saas.py             # Shopify, Stripe, Klaviyo, Meta Ads, LinkedIn, etc.
+│   ├── image.py            # Flux, SDXL, OpenAI image generation
+│   ├── llm.py              # OpenAI, Anthropic, Gemini, OpenRouter chat
+│   ├── productivity.py     # Notion, Figma, Gmail, Canva, Web search
+│   └── deploy.py           # GitHub, Vercel deployment tools
+├── registry.py             # Tool registration and discovery
+└── bootstrap.py            # Startup registration of all built-in tools
+```
+
+**Consistent Adapter Pattern** — every tool follows:
+1. `_resolve_creds(session, workspace_id, provider)` — resolve credentials from DB
+2. Validate credentials exist (return clear "not connected" error if missing)
+3. Make real HTTP API call to the provider
+4. Return `ToolResult` with `ok=True/False` and data or error message
+
+**No mocks, no synthetic data** — every adapter either makes a real API call or fails with a clear "X not connected" error. Zero silent degradation.
+
+### 9. Integration Health Monitoring (`apps/api/helix/services/integration_health.py`)
+
+Health check service that verifies every connected integration with real API probes:
+- Per-provider health check definitions (lightweight API calls)
+- `GET /integrations/health` endpoint returns per-provider status (healthy/expired/error)
+- `last_health_check` and `health_status` stored on connection metadata
+- Frontend shows health badges: green (healthy), yellow (expired), red (error)
+
+### 10. MCP Protocol Server (`apps/api/helix/tools/adapters/mcp_server.py`)
+
+Model Context Protocol implementation for AI client tool access:
+- **JSON-RPC 2.0** protocol compliance
+- **SSE transport** (`SseMcpTransport`) — server-sent events for remote clients (e.g., IDEs)
+- **Stdio transport** (`StdioMcpTransport`) — stdin/stdout for local clients (e.g., Claude Desktop)
+- Tool listing + calling via the tool registry
+- Singleton `get_mcp_server()` factory — transport is a lifecycle choice
+
+### 11. Database Model (`apps/api/helix/models/`)
 
 21 SQLAlchemy models across 16 migrations:
 
@@ -273,8 +324,15 @@ Background task execution via Redis queue:
 ```
 helix/
 ├── apps/
-│   ├── api/          # Python FastAPI backend
-│   ├── web/          # Next.js frontend
+│   ├── api/          # Python FastAPI backend (helix/)
+│   │   ├── helix/
+│   │   │   ├── api/          # 27 route modules under /v1
+│   │   │   ├── tools/        # Tool adapter system (76+ adapters)
+│   │   │   ├── agents/       # LangGraph agent orchestration (15 agents)
+│   │   │   ├── llm/          # LLM gateway (60+ models, 11 providers)
+│   │   │   ├── services/     # Business logic + health checks
+│   │   │   └── models/       # 21 SQLAlchemy models
+│   ├── web/          # Next.js 15 frontend
 │   └── workers/      # Background workers
 ├── packages/
 │   ├── types/        # Shared TypeScript types
