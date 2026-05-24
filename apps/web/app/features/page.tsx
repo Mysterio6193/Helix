@@ -288,8 +288,8 @@ const PLATFORM_PROPS: {
 export default function FeaturesPage() {
   return (
     <MarketingShell>
-      <div className="absolute top-[10%] right-0 w-[600px] h-[600px] rounded-full bg-[rgba(162,75,255,0.06)] blur-[140px] pointer-events-none" />
-      <div className="absolute top-[60%] -left-32 w-[500px] h-[500px] rounded-full bg-[rgba(255,106,77,0.04)] blur-[130px] pointer-events-none" />
+      <div className="absolute top-[10%] right-0 w-[600px] h-[600px] rounded-full bg-[rgba(162,75,255,0.012)] blur-[140px] pointer-events-none" />
+      <div className="absolute top-[60%] -left-32 w-[500px] h-[500px] rounded-full bg-[rgba(255,106,77,0.008)] blur-[130px] pointer-events-none" />
 
       {/* ===== Hero ===== */}
       <Reveal>
@@ -337,7 +337,7 @@ export default function FeaturesPage() {
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="group flex items-center gap-2 px-3 py-2 rounded-lg border border-white/[0.05] bg-[#0d0e12]/40 hover:border-white/[0.12] hover:bg-[#13141a]/80 transition-all"
+                className="group flex items-center gap-2 px-3 py-2 rounded-lg border border-white/[0.06] bg-[#13141a]/90 hover:border-purple-500/30 hover:bg-[#1a1c24] hover:scale-[1.03] hover:-translate-y-0.5 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.4)] hover:shadow-[0_6px_20px_rgba(162,75,255,0.06)] transition-all duration-300"
               >
                 <span
                   className="size-6 rounded-md flex items-center justify-center"
@@ -420,41 +420,47 @@ export default function FeaturesPage() {
                 <div className="pt-2">
                   <Link href={s.href}>
                     <Button
-                      variant="secondary"
+                      variant="glow"
                       size="md"
-                      className="bg-white/[0.04] hover:bg-white/[0.08] text-white border-white/[0.08]"
+                      className="group h-10 px-5 font-bold rounded-xl text-white flex items-center gap-1.5 cursor-pointer transition-all duration-300 hover:opacity-90"
+                      style={{
+                        background: `linear-gradient(135deg, ${s.accent} 0%, ${s.accent}bb 100%)`,
+                        boxShadow: `0 0 15px ${s.accent}33`,
+                      }}
                     >
                       Try it
-                      <ArrowRight size={14} />
+                      <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
                     </Button>
                   </Link>
                 </div>
               </div>
 
-              <div
-                className={`${
+              <Link
+                href={s.href}
+                className={`group/card block ${
                   flipped ? "lg:col-span-5 lg:order-1" : "lg:col-span-5"
                 }`}
               >
                 <div
-                  className="relative aspect-square rounded-2xl border border-white/[0.05] bg-[#0d0e12]/50 overflow-hidden p-8 flex items-center justify-center"
+                  className="relative aspect-square rounded-2xl border border-white/[0.08] bg-[#13141a] overflow-hidden p-8 flex items-center justify-center transition-all duration-300 group-hover/card:border-white/[0.18] group-hover/card:scale-[1.015] group-hover/card:-translate-y-1 cursor-pointer"
                   style={{
-                    background: `radial-gradient(circle at 30% 30%, ${s.accent}1a, transparent 60%), #0d0e12cc`,
+                    background: `radial-gradient(circle at 30% 30%, ${s.accent}22, transparent 60%), #13141acc`,
+                    boxShadow: `0 4px 20px rgba(0,0,0,0.5)`,
                   }}
                 >
                   <div
-                    className="absolute inset-0 opacity-30 pointer-events-none"
+                    className="absolute inset-0 opacity-30 pointer-events-none group-hover/card:opacity-40 transition-opacity duration-300"
                     style={{
                       background: `radial-gradient(circle at 70% 70%, ${s.accent}33, transparent 50%)`,
                     }}
                   />
                   <Icon
                     size={120}
-                    className="relative"
+                    className="relative transition-transform duration-500 group-hover/card:scale-110"
                     style={{ color: s.accent, opacity: 0.85 }}
                   />
                 </div>
-              </div>
+              </Link>
             </div>
           </section>
         );
@@ -480,7 +486,7 @@ export default function FeaturesPage() {
             return (
               <div
                 key={p.title}
-                className="p-5 rounded-xl border border-white/[0.05] bg-[#0d0e12]/50 space-y-3"
+                className="p-5 rounded-xl border border-white/[0.04] bg-[#13141a]/40 backdrop-blur-sm space-y-3 cursor-default transition-colors duration-300 hover:border-white/[0.08]"
               >
                 <div className="size-9 rounded-lg flex items-center justify-center bg-white/[0.04] border border-white/[0.05] text-white/80">
                   <Icon size={16} />

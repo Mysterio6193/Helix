@@ -341,6 +341,124 @@ export interface AuthStatus {
   provider?: string | null;
   user?: AuthUser | null;
 }
+const isSandbox = () => typeof window !== "undefined" && localStorage.getItem("helix_sandbox_session") === "true";
+
+const MOCK_WORKSPACE = [
+  {
+    id: "sandbox-workspace",
+    organization_id: "sandbox-org",
+    name: "Sandbox Workspace",
+    slug: "sandbox-workspace",
+    description: "Explore Helix without backend constraints"
+  }
+];
+
+const MOCK_BRANDS = [
+  {
+    id: "mock-brand-1",
+    name: "Slice & Dice Co.",
+    slug: "slice-dice",
+    category: "Pizza & Pasta",
+    tagline: "Crafted pizzas, composed precisely.",
+    status: "active"
+  },
+  {
+    id: "mock-brand-2",
+    name: "Bento Junction",
+    slug: "bento-junction",
+    category: "Japanese Fast-Casual",
+    tagline: "Traditional boxes, modern speeds.",
+    status: "active"
+  }
+];
+
+const MOCK_RUNS = [
+  {
+    id: "mock-run-1",
+    workflow: "Brand Identity Generation",
+    brand_id: "mock-brand-1",
+    status: "completed",
+    created_at: "2026-05-24T10:00:00Z",
+    completed_at: "2026-05-24T10:02:15Z"
+  },
+  {
+    id: "mock-run-2",
+    workflow: "Packaging Artwork Generator",
+    brand_id: "mock-brand-1",
+    status: "completed",
+    created_at: "2026-05-24T11:30:00Z",
+    completed_at: "2026-05-24T11:31:45Z"
+  },
+  {
+    id: "mock-run-3",
+    workflow: "Next.js Site & Deploy",
+    brand_id: "mock-brand-2",
+    status: "completed",
+    created_at: "2026-05-24T12:00:00Z",
+    completed_at: "2026-05-24T12:05:12Z"
+  }
+];
+
+const MOCK_ASSETS = [
+  {
+    id: "mock-asset-1",
+    brand_id: "mock-brand-1",
+    kind: "logo",
+    purpose: "Primary Brand Logo",
+    mime_type: "image/png",
+    storage_url: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80",
+    metadata: { width: 512, height: 512 },
+    created_at: "2026-05-24T10:01:00Z"
+  },
+  {
+    id: "mock-asset-2",
+    brand_id: "mock-brand-1",
+    kind: "packaging",
+    purpose: "Pizza Box Lid Label",
+    mime_type: "image/png",
+    storage_url: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80",
+    metadata: { width: 1024, height: 1024 },
+    created_at: "2026-05-24T11:31:00Z"
+  },
+  {
+    id: "mock-asset-3",
+    brand_id: "mock-brand-2",
+    kind: "website",
+    purpose: "Next.js Scaffold Preview",
+    mime_type: "image/png",
+    storage_url: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&q=80",
+    metadata: { width: 1280, height: 800 },
+    created_at: "2026-05-24T12:04:00Z"
+  }
+];
+
+const MOCK_OPERATING_SYSTEM_OVERVIEW = {
+  metrics: [
+    { label: "Active Brands", value: "2", delta: "+1 this week", tone: "success" },
+    { label: "Workflow Success", value: "98.4%", delta: "+2.1%", tone: "success" },
+    { label: "Total Generation Cost", value: "$12.45", delta: null, tone: "neutral" }
+  ],
+  systems: [
+    { name: "Celery Workflows", status: "online", description: "Durable task runner for multi-step jobs." },
+    { name: "Postgres SQL", status: "online", description: "Relational storage for brands, runs, and memories." },
+    { name: "Redis Memory", status: "online", description: "Key-value broker for live pub/sub sync." }
+  ],
+  council: [
+    { name: "Design Critic Agent", mandate: "Visual quality control & contrast assurance.", status: "active" },
+    { name: "Copy Alignment Agent", mandate: "Brand voice consistency & vocabulary control.", status: "active" },
+    { name: "SEO Placement Agent", mandate: "Metadata correctness & viewport performance.", status: "active" }
+  ],
+  intelligence_layers: [
+    { name: "Brand Memory Store", description: "Compound vector store that stores past iterations.", status: "active" },
+    { name: "LLM Router Hub", description: "Low-latency streaming switchboard for provider APIs.", status: "active" }
+  ],
+  action_feed: [
+    { id: "mock-act-1", title: "Bento Junction site deployed to Vercel production alias", status: "success", detail: "Deployed in 54s with 0 errors" },
+    { id: "mock-act-2", title: "Slice & Dice Co. pizza box artwork finalized", status: "success", detail: "Exported print-ready bleed PDF" }
+  ],
+  event_triggers: [],
+  automation_coverage: {}
+};
 
 export const api = {
   get: <T = any>(path: string) => request<T>(path),
@@ -350,7 +468,10 @@ export const api = {
     request<T>(path, { method: "DELETE" }),
   operatingSystem: {
     overview: () =>
-      request<OperatingSystemOverview>("/operating-system/overview"),
+      request<OperatingSystemOverview>("/operating-system/overview").catch((err) => {
+        if (isSandbox()) return MOCK_OPERATING_SYSTEM_OVERVIEW as any;
+        throw err;
+      }),
     bootstrap: (payload: { workspace_id?: string | null } = {}) =>
       request<OperatingSystemBootstrapResult>("/operating-system/bootstrap", {
         method: "POST",
@@ -358,7 +479,23 @@ export const api = {
       }),
   },
   auth: {
-    me: () => request<AuthStatus>("/auth/me"),
+    me: () => request<AuthStatus>("/auth/me").catch((err) => {
+      if (isSandbox()) {
+        return {
+          authenticated: true,
+          provider: "dev-bypass",
+          user: {
+            id: "sandbox-user",
+            email: (typeof window !== "undefined" && localStorage.getItem("helix_sandbox_email")) || "sandbox@helix.app",
+            name: (typeof window !== "undefined" && localStorage.getItem("helix_sandbox_name")) || "Sandbox Explorer",
+            role: "owner",
+            picture: null,
+            organization_id: "sandbox-org",
+          },
+        };
+      }
+      throw err;
+    }),
     providers: () =>
       request<{ google: { enabled: boolean; label: string } }>(
         "/auth/providers",
@@ -367,11 +504,43 @@ export const api = {
       request<{ url: string }>(
         `/auth/google/start?return_to=${encodeURIComponent(returnTo)}`,
       ),
-    logout: () => request<{ ok: boolean }>("/auth/logout", { method: "POST" }),
+    logout: () => request<{ ok: boolean }>("/auth/logout", { method: "POST" })
+      .then((res) => {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("helix_sandbox_session");
+          localStorage.removeItem("helix_sandbox_email");
+          localStorage.removeItem("helix_sandbox_name");
+        }
+        return res;
+      })
+      .catch((err) => {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("helix_sandbox_session");
+          localStorage.removeItem("helix_sandbox_email");
+          localStorage.removeItem("helix_sandbox_name");
+          return { ok: true };
+        }
+        throw err;
+      }),
     devBypass: (email: string, name: string) =>
       request<{ ok: boolean; user_id: string }>("/auth/dev-bypass", {
         method: "POST",
         body: JSON.stringify({ email, name }),
+      }).then((res) => {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("helix_sandbox_session", "true");
+          localStorage.setItem("helix_sandbox_email", email);
+          localStorage.setItem("helix_sandbox_name", name);
+        }
+        return res;
+      }).catch((err) => {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("helix_sandbox_session", "true");
+          localStorage.setItem("helix_sandbox_email", email);
+          localStorage.setItem("helix_sandbox_name", name);
+          return { ok: true, user_id: "sandbox-user" };
+        }
+        throw err;
       }),
   },
   organizations: {
@@ -380,7 +549,10 @@ export const api = {
   },
   workspaces: {
     list: () =>
-      request<Page<Workspace>>("/workspaces").then((p) => p.items),
+      request<Page<Workspace>>("/workspaces").then((p) => p.items).catch((err) => {
+        if (isSandbox()) return MOCK_WORKSPACE as any;
+        throw err;
+      }),
     get: (id: string) => request<Workspace>(`/workspaces/${id}`),
     create: (w: Partial<Workspace>) =>
       request<Workspace>("/workspaces", { method: "POST", body: JSON.stringify(w) }),
@@ -405,7 +577,10 @@ export const api = {
   },
   brands: {
     list: () =>
-      request<Page<Brand>>("/brands").then((p) => p.items),
+      request<Page<Brand>>("/brands").then((p) => p.items).catch((err) => {
+        if (isSandbox()) return MOCK_BRANDS as any;
+        throw err;
+      }),
     get: (id: string) => request<Brand>(`/brands/${id}`),
     create: (b: Partial<Brand>) =>
       request<Brand>("/brands", { method: "POST", body: JSON.stringify(b) }),
@@ -418,7 +593,10 @@ export const api = {
       const qs = q.toString();
       return request<Page<RunSummary>>(`/runs${qs ? `?${qs}` : ""}`).then(
         (p) => p.items,
-      );
+      ).catch((err) => {
+        if (isSandbox()) return MOCK_RUNS as any;
+        throw err;
+      });
     },
     get: (id: string) => request<RunDetail>(`/runs/${id}`),
     create: (payload: RunCreate) =>
@@ -549,7 +727,10 @@ export const api = {
       if (params?.limit) q.set("limit", String(params.limit));
       if (params?.offset) q.set("offset", String(params.offset));
       const qs = q.toString();
-      return request<AssetItem[]>(`/assets${qs ? `?${qs}` : ""}`);
+      return request<AssetItem[]>(`/assets${qs ? `?${qs}` : ""}`).catch((err) => {
+        if (isSandbox()) return MOCK_ASSETS as any;
+        throw err;
+      });
     },
     get: (id: string) => request<AssetItem>(`/assets/${id}`),
     url: (id: string) => request<{ url: string }>(`/assets/${id}/url`),

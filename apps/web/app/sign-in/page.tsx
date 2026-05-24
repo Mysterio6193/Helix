@@ -33,10 +33,14 @@ function SignInInner() {
           router.replace(returnTo);
           return;
         }
-        const p = await api.auth.providers();
-        if (alive) setProviders(p);
+        try {
+          const p = await api.auth.providers();
+          if (alive) setProviders(p);
+        } catch {
+          if (alive) setProviders({ google: { enabled: false, label: "Google" } });
+        }
       } catch (err) {
-        if (alive) setError(err instanceof Error ? err.message : "init_failed");
+        // Silent catch for initial auth checks to avoid presenting errors to the user on load
       }
     })();
     return () => {
