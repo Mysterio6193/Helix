@@ -19,6 +19,7 @@ from helix.api.v1 import (
     memory,
     operating_system,
     organizations,
+    power,
     public,
     runs,
     sessions,
@@ -55,3 +56,4 @@ api_router.include_router(websocket.router)
 api_router.include_router(browser.router)
 api_router.include_router(media.router)
 api_router.include_router(public.router)
+api_router.include_router(power.router)
