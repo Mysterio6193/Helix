@@ -28,10 +28,12 @@ import {
   Play,
   RotateCcw,
   Activity,
-  Layout
+  Layout,
+  Layers
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { MarketingShell } from "@/components/layout/marketing-shell";
 import {
   Reveal,
@@ -39,6 +41,30 @@ import {
   RevealStagger,
 } from "@/components/marketing/reveal";
 import { TestimonialsSection } from "@/components/marketing/testimonials";
+
+function AppleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.48C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.1 16.67C20.08 16.74 19.67 18.11 18.71 19.5M15.97 4.17C16.63 3.37 17.07 2.28 16.95 1C15.85 1.04 14.51 1.73 13.73 2.64C13.07 3.41 12.49 4.52 12.64 5.78C13.87 5.87 15.12 5.17 15.97 4.17Z" />
+    </svg>
+  );
+}
+
+function WindowsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M0 3.449L9.75 2.1v9.451H0V3.449zM0 12.45h9.75v9.45L0 20.551v-8.101zM11.25 1.9L24 0v11.549H11.25V1.9zm0 10.55H24v9.649l-12.75-1.9v-7.749z" />
+    </svg>
+  );
+}
+
+function LinuxIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 .007c-.122 0-.244.007-.354.022-.24.032-.44.153-.6.353-.146.182-.248.423-.332.748-.09.349-.153.815-.205 1.347-.103 1.064-.153 2.457-.153 3.992 0 1.536.05 2.929.153 3.992.052.532.115.998.205 1.347.084.325.186.566.332.748.16.2.36.321.6.353.11.015.232.022.354.022s.244-.007.354-.022c.24-.032.44-.153.6-.353.146-.182.248-.423.332-.748.09-.349.153-.815.205-1.347.103-1.064.153-2.457.153-3.992 0-1.536-.05-2.929-.153-3.992-.052-.532-.115-.998-.205-1.347-.084-.325-.186-.566-.332-.748-.16-.2-.36-.321-.6-.353-.11-.015-.232-.022-.354-.022zm0 14.86c-4.418 0-8 3.582-8 8v1.125h16v-1.125c0-4.418-3.582-8-8-8z" />
+    </svg>
+  );
+}
 
 /* ─── MOCK BRIEF TEMPLATES ────────────────────────────────── */
 
@@ -358,34 +384,34 @@ export function GuestLanding() {
   const [logs, setLogs] = useState<string[]>([]);
   const logContainerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Immersive Mux HLS Video Background hook
+  const [localTab, setLocalTab] = useState<"cli" | "desktop" | "docker">("cli");
+  // Immersive Mux HLS Video Background hook - optimized with 1.5s lazy load
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const streamUrl = "https://stream.mux.com/8wrHPCX2dC3msyYU9ObwqNdm00u3ViXvOSHUMRYSEe5Q.m3u8";
+    const timer = setTimeout(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      const streamUrl = "https://stream.mux.com/8wrHPCX2dC3msyYU9ObwqNdm00u3ViXvOSHUMRYSEe5Q.m3u8";
 
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = streamUrl;
-    } else {
-      let active = true;
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js";
-      script.async = true;
-      script.onload = () => {
-        const win = window as any;
-        if (win.Hls && win.Hls.isSupported()) {
-          const hls = new win.Hls();
-          hls.loadSource(streamUrl);
-          hls.attachMedia(video);
-        }
-      };
-      document.head.appendChild(script);
-      return () => {
-        active = false;
-        script.remove();
-      };
-    }
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = streamUrl;
+      } else {
+        let active = true;
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js";
+        script.async = true;
+        script.onload = () => {
+          if (!active) return;
+          const win = window as any;
+          if (win.Hls && win.Hls.isSupported()) {
+            const hls = new win.Hls();
+            hls.loadSource(streamUrl);
+            hls.attachMedia(video);
+          }
+        };
+        document.head.appendChild(script);
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   // Auto-scroll logs terminal
@@ -1115,6 +1141,167 @@ export function GuestLanding() {
             );
           })}
         </RevealStagger>
+      </section>
+
+      {/* ===== Run Helix Locally (CLI / Desktop App) ===== */}
+      <section className="relative max-w-7xl mx-auto w-full px-6 sm:px-8 py-16 md:py-24 border-t border-white/[0.04] z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <Reveal className="lg:col-span-5">
+            <div className="space-y-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-signature)]">
+                Local Execution
+              </p>
+              <h2 className="font-display text-3xl sm:text-5xl font-light tracking-[-0.015em] text-white leading-[1.05] text-balance">
+                Run Helix locally on your machine.
+              </h2>
+              <p className="text-[14px] text-[var(--color-slate)] leading-relaxed">
+                Control Helix from your local terminal like <code>hermes-agent</code> or launch our native high-performance desktop application. Complete local data privacy, standard model proxy support, and seamless offline capability.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {[
+                  { key: "cli", label: "Helix CLI" },
+                  { key: "desktop", label: "Desktop App" },
+                  { key: "docker", label: "Docker" }
+                ].map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setLocalTab(t.key as any)}
+                    className={`px-4 py-2 rounded-full text-micro font-semibold transition-all border cursor-pointer ${
+                      localTab === t.key
+                        ? "bg-[var(--color-signature)]/10 border-[var(--color-signature)]/35 text-[var(--color-signature)]"
+                        : "bg-white/[0.02] border-white/5 text-[var(--color-charcoal)] hover:border-white/10 hover:bg-white/[0.05]"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal className="lg:col-span-7">
+            <div className="relative rounded-2xl border border-white/[0.06] bg-[#0d0e12]/80 p-6 overflow-hidden shadow-2xl backdrop-blur-md min-h-[260px] flex flex-col justify-between">
+              <div className="absolute -inset-1 bg-[radial-gradient(circle_at_30%_0%,rgba(162,75,255,0.04),transparent_40%),radial-gradient(circle_at_70%_100%,rgba(0,212,170,0.04),transparent_45%)] pointer-events-none" />
+              
+              <AnimatePresence mode="wait">
+                {localTab === "cli" && (
+                  <motion.div
+                    key="cli-tab"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-4 flex-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Terminal size={14} className="text-purple-400" />
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-purple-400 font-semibold">
+                          Local Terminal Setup
+                        </span>
+                      </div>
+                      <Badge tone="success">Stable v0.10.0</Badge>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-white/5 bg-black/60 font-mono text-[11px] text-zinc-300 space-y-2 select-all relative group shadow-inner">
+                      <span className="text-zinc-500 block"># Install Helix system CLI globally</span>
+                      <span className="text-white block"><span className="text-purple-400">$</span> npm install -g @helix/os-cli</span>
+                      <span className="text-zinc-500 block mt-2"># Initialize local keys, databases, &amp; model providers</span>
+                      <span className="text-white block"><span className="text-purple-400">$</span> helix init</span>
+                      <span className="text-zinc-500 block mt-2"># Launch local command center daemon</span>
+                      <span className="text-white block"><span className="text-purple-400">$</span> helix dev --port 3001</span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {localTab === "desktop" && (
+                  <motion.div
+                    key="desktop-tab"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-4 flex-1 flex flex-col justify-between"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Layout size={14} className="text-orange-400" />
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-orange-400 font-semibold">
+                          Helix Desktop Workspace
+                        </span>
+                      </div>
+                      <Badge tone="info">Universal Build</Badge>
+                    </div>
+
+                    <p className="text-[12px] text-[var(--color-slate)] leading-relaxed">
+                      Download the native standalone desktop application for offline brand creation and local model orchestration. Integrates full hardware acceleration for local LLMs.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+                      <a
+                        href="/downloads/helix-mac-silicon.dmg"
+                        className="px-4 py-2.5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/10 text-center flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                      >
+                        <AppleIcon className="size-4 text-white" />
+                        <div className="text-left">
+                          <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-bold leading-none">macOS</span>
+                          <span className="text-micro font-semibold text-white mt-1 block">Apple Silicon</span>
+                        </div>
+                      </a>
+
+                      <a
+                        href="/downloads/helix-win.exe"
+                        className="px-4 py-2.5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/10 text-center flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                      >
+                        <WindowsIcon className="size-4 text-sky-400" />
+                        <div className="text-left">
+                          <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-bold leading-none">Windows</span>
+                          <span className="text-micro font-semibold text-white mt-1 block">Download .exe</span>
+                        </div>
+                      </a>
+
+                      <a
+                        href="/downloads/helix-linux.deb"
+                        className="px-4 py-2.5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/10 text-center flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                      >
+                        <LinuxIcon className="size-4 text-amber-500" />
+                        <div className="text-left">
+                          <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-bold leading-none">Linux</span>
+                          <span className="text-micro font-semibold text-white mt-1 block">Download .deb</span>
+                        </div>
+                      </a>
+                    </div>
+                  </motion.div>
+                )}
+
+                {localTab === "docker" && (
+                  <motion.div
+                    key="docker-tab"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-4 flex-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Layers size={14} className="text-teal-400" />
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-teal-400 font-semibold">
+                          Docker Container Deployment
+                        </span>
+                      </div>
+                      <Badge tone="warning">Compose Supported</Badge>
+                    </div>
+
+                    <div className="p-4 rounded-xl border border-white/5 bg-black/60 font-mono text-[11px] text-zinc-300 space-y-2 select-all relative shadow-inner">
+                      <span className="text-zinc-500 block"># Spin up full local Helix stack inside a single container</span>
+                      <span className="text-white block"><span className="text-teal-400">$</span> docker run -d -p 3000:3000 --name helix-os helix/os:latest</span>
+                      <span className="text-zinc-500 block mt-2"># Or download custom docker-compose.yml cluster</span>
+                      <span className="text-white block"><span className="text-teal-400">$</span> curl -sSL https://helix-os.app/run.sh | bash</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ===== Capabilities Matrix Overhaul ===== */}
