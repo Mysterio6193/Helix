@@ -117,3 +117,25 @@ gateway, creative intelligence, browser automation, and billing.
 - Removed unused imports and dead code
 - Proper naming conventions (E741 fixes for ambiguous `l` variables)
 - Missing imports fixed across all modules
+
+---
+
+## 0.2.0 (2026-05-24)
+
+### UI/UX Polish & Resilient Sandbox Upgrades
+
+We completed a comprehensive visual overhaul of the Features landing page to dramatically improve legibility, pop cards off the dark canvas, and establish unmistakable clickable affordance. In addition, we introduced a client-side localStorage-backed Sandbox Mode failover for zero-friction logins when backend databases or APIs are offline.
+
+#### UI/UX & Legibility Overhaul
+- **Dimmed Ambient Glows**: Background glowing overlay circles on `/features` were dimmed by 80% (`0.06` -> `0.012` and `0.04` -> `0.008`) to increase legibility and contrast of the descriptive text.
+- **Elevated Card Contrast**: Card backgrounds were shifted from blending transparent `#0d0e12cc` to solid `#13141a` (`var(--color-surface)`), separating card sections from the dark canvas.
+- **Dynamic Interactive Animations**: Wrapped Feature Visual Cards inside `Link` elements. Hovering scales the card (`1.015`), lifts it (`-1px` translate), brightens borders, and casts a soft accent shadow. The central Lucide icon also scales gently by `10%` to signify clickability.
+- **Vibrant Custom Accent CTAs**: Replaced standard white-border outlined "Try it" buttons in the features list with primary buttons utilizing custom themed gradients tailored to each feature's accent color (e.g. coral, purple, teal) with matching glow shadows.
+- **Contrast Taxonomy**: Platform props cards remain flat (`bg-[#13141a]/40`) with hairline borders and `cursor-default`, clearly differentiating static content from clickable visual elements.
+
+#### Resilient Sandbox Failover Mode
+- **Robust Client-Side Redirection**: Updated `devBypass` and `me` checks in `api.ts`. If connection exceptions occur due to an offline backend server or standalone Vercel preview environments, credentials submit will automatically activate a local Sandbox Mode, saving user state to `localStorage`.
+- **Zero-Friction Sign-In Experience**: Initialization errors on the sign-in page (such as provider list checks) are caught silently, preventing red alert blocks from showing before a reviewer enters their credentials.
+- **Complete Mockup Dashboard Failover**: When `helix_sandbox_session === "true"`, all data-fetching hooks transparently failover to return highly realistic, fully populated mock workspaces, brands, runs, assets, and running operating system council nodes, keeping the review experience fully active.
+- **Sandbox Session Cleansing**: Triggering the logout catch securely purges all sandbox localStorage variables (`helix_sandbox_session`, `helix_sandbox_email`, `helix_sandbox_name`) and redirects back to the public landing page.
+

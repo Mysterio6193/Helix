@@ -11,10 +11,10 @@ class CriticAgent(Agent):
 
     async def run(self, ctx: AgentContext) -> AgentResult:
         candidate = ctx.extra.get("candidate")
-        
+
         # Run the multi-modal critique ensemble
         report = await ensemble_score(ctx.state, candidate)
-        
+
         critique = {
             "verdict": report.verdict,
             "score": report.weighted_score,
@@ -23,7 +23,7 @@ class CriticAgent(Agent):
             "feedback": report.feedback,
             "target_branch": "visuals" if any(d in ["palette", "clip", "contrast"] for d in report.failing_dimensions) else "copy",
         }
-        
+
         return AgentResult(
             ok=True,
             patch={"critiques": [critique]},  # operator.add reducer

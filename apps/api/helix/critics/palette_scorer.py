@@ -36,15 +36,15 @@ def _extract_dominant_colors(img_bytes: bytes, max_colors: int = 5) -> list[tupl
         img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
         # Resize image to a small square to speed up and smooth out details
         img = img.resize((32, 32), Image.Resampling.NEAREST)
-        
+
         # Quantize the image down to the target number of colors
         quantized = img.quantize(colors=max_colors)
-        
+
         # Get palette colors
         palette = quantized.getpalette()
         if not palette:
             return []
-            
+
         colors = []
         for i in range(max_colors):
             r = palette[i * 3]
@@ -124,7 +124,7 @@ async def score_palette(
         total_min_dist += min_dist
 
     avg_dist = total_min_dist / len(dominant_colors)
-    
+
     # Invert to get score (lower distance = higher score)
     score_val = 1.0 - avg_dist
     return max(0.0, min(1.0, score_val))

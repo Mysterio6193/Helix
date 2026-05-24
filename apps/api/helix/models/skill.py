@@ -30,7 +30,7 @@ class SkillRegistry(Base):
     usage_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     success_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     success_rate: Mapped[float | None] = mapped_column(Float)
-    
+
     # Pillar 3 Specialization columns
     is_specialization: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     parent_skill: Mapped[str | None] = mapped_column(
@@ -69,7 +69,7 @@ class SkillLearning(Base):
     score: Mapped[float | None] = mapped_column(Float)
     applied_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    
+
     # pgvector embedding for semantic retrieval
     from pgvector.sqlalchemy import Vector
     context_embedding: Mapped[list[float] | None] = mapped_column(Vector(1536))

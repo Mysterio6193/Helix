@@ -15,12 +15,12 @@ log = get_logger(__name__)
 async def reflect_on_run(state: HelixState) -> list[dict[str, Any]]:
     """LLM-powered post-run reflection that extracts concrete learnings."""
     settings = get_settings()
-    
+
     # Extract workflow metadata
     run_id_str = state.get("run_id")
     brand_id_str = state.get("brand_id")
     workflow = state.get("workflow", "unknown")
-    
+
     try:
         run_id = uuid.UUID(run_id_str) if run_id_str else uuid.uuid4()
         brand_id = uuid.UUID(brand_id_str) if brand_id_str else None
@@ -107,7 +107,7 @@ Respond ONLY with valid JSON. Do not include markdown blocks like ```json or any
     try:
         from openai import AsyncOpenAI
         client = AsyncOpenAI(api_key=settings.openai_api_key)
-        
+
         resp = await client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -122,13 +122,13 @@ Respond ONLY with valid JSON. Do not include markdown blocks like ```json or any
         content = resp.choices[0].message.content or ""
         data = json.loads(content)
         learnings_raw = data.get("learnings", [])
-        
+
         output_learnings = []
         for item in learnings_raw:
             skill_name = item.get("skill_name")
             if not skill_name:
                 continue
-            
+
             output_learnings.append({
                 "skill_name": skill_name,
                 "workflow_run_id": run_id,
@@ -165,13 +165,13 @@ def _offline_fallback_reflection(state: HelixState, run_id: uuid.UUID, brand_id:
         skill_name = step.get("skill")
         if step.get("status") == "ok" and skill_name:
             trigger_context = f"{brand_category} brand under {design_school} school inside {workflow} workflow."
-            
+
             # Simple deterministic prompt delta based on state
             prompt_delta = (
                 f"For the {skill_name} skill, ensure output strictly conforms to "
                 f"the {design_school} style school with color palette {brand_context.get('palette', [])}."
             )
-            
+
             learnings.append({
                 "skill_name": skill_name,
                 "workflow_run_id": run_id,

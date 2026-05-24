@@ -124,7 +124,7 @@ async def sync_registry(db: AsyncSession | None = None, reload_handlers: bool = 
         existing = (
             await db.execute(select(SkillRegistry).where(SkillRegistry.name == manifest.name))
         ).scalar_one_or_none()
-        
+
         parsed_brand_id = None
         if manifest.brand_id:
             try:

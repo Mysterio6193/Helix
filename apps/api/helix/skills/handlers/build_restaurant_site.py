@@ -514,7 +514,7 @@ def _render_preview_html(
     sections: dict,
 ) -> str:
     tokens = _tokens(design_system)
-    
+
     def esc(s: Any) -> str:
         if s is None:
             return ""
@@ -543,7 +543,7 @@ def _render_preview_html(
         """
 
     addr_html = "".join(f"<p class='text-sm text-[color:var(--color-ink)]/80'>{esc(line)}</p>" for line in visit.get("address_lines") or [])
-    
+
     hours_html = "".join(f"<div class='flex justify-between py-2 border-b border-[color:var(--color-hairline)]/50 last:border-0'><span class='text-sm font-medium text-[color:var(--color-ink)]/70'>{esc(h.get('day'))}</span><span class='text-sm text-[color:var(--color-ink)]/80'>{esc(h.get('hours'))}</span></div>" for h in visit.get("hours") or [])
 
     about_paragraphs_html = "".join(f"<p class='text-base text-[color:var(--color-ink)]/80 leading-relaxed mb-6 last:mb-0'>{esc(p)}</p>" for p in about.get("paragraphs") or [])
@@ -799,14 +799,14 @@ async def handle(ctx: SkillContext) -> SkillResult:
 
     # Create website preview Asset
     from helix.models.workflow import Asset
-    
+
     preview_html = _render_preview_html(
         brand_name=brand_name,
         tagline=tagline,
         design_system=design_system,
         sections=sections,
     )
-    
+
     asset = Asset(
         workflow_run_id=ctx.workflow_run_id,
         brand_id=ctx.brand_id,
@@ -823,7 +823,7 @@ async def handle(ctx: SkillContext) -> SkillResult:
     )
     ctx.db.add(asset)
     await ctx.db.flush()
-    
+
     outputs["preview_asset_id"] = str(asset.id)
     asset_ids = [asset.id]
 

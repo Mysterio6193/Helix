@@ -636,6 +636,20 @@ export const api = {
         `/integrations/${provider}?workspace_id=${encodeURIComponent(workspaceId)}`,
         { method: "DELETE" },
       ),
+    health: (workspaceId: string) =>
+      request<{
+        checked: number;
+        healthy: number;
+        expired: number;
+        error: number;
+        results: Array<{
+          provider: string;
+          account_label?: string | null;
+          status: string;
+          message?: string | null;
+        }>;
+        checked_at: string;
+      }>(`/integrations/health?workspace_id=${encodeURIComponent(workspaceId)}`),
   },
   telegram: {
     status: (workspaceId: string) =>

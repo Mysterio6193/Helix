@@ -34,7 +34,7 @@ async def get_organization(
     """Get a specific organization. Users can only access their own organization."""
     if org_id != user.organization_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="access denied")
-    
+
     org = await org_service.get_organization(db, org_id)
     if not org:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="organization not found")

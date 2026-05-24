@@ -19,7 +19,7 @@ async def setup_checkpointer() -> AsyncPostgresSaver:
 
     settings = get_settings()
     conn_str = settings.db_url.replace("postgresql+asyncpg://", "postgresql://")
-    
+
     pool = AsyncConnectionPool(
         conninfo=conn_str,
         max_size=settings.db_pool_size,
@@ -27,7 +27,7 @@ async def setup_checkpointer() -> AsyncPostgresSaver:
     )
     # open pool
     await pool.open()
-    
+
     checkpointer = AsyncPostgresSaver(pool)
     await checkpointer.setup()
     log.info("checkpointer.setup_complete")

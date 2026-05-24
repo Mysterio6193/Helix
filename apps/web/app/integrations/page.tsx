@@ -53,6 +53,69 @@ const CATEGORY_ORDER = [
   "other",
 ];
 
+// Tool counts per provider (based on available tool adapters)
+const TOOL_COUNTS: Record<string, number> = {
+  telegram: 1,
+  slack: 1,
+  discord: 1,
+  whatsapp_business: 1,
+  meta_pages: 1,
+  instagram_business: 1,
+  meta_ads: 1,
+  threads: 1,
+  toast: 1,
+  square: 1,
+  resy: 1,
+  opentable: 1,
+  doordash: 1,
+  ubereats: 1,
+  yelp: 1,
+  google_business: 1,
+  shopify: 1,
+  stripe: 1,
+  twilio: 1,
+  woocommerce: 1,
+  mailchimp: 1,
+  klaviyo: 1,
+  hubspot: 1,
+  sendgrid: 1,
+  linkedin: 1,
+  twitter: 1,
+  tiktok_business: 1,
+  youtube: 1,
+  pinterest: 1,
+  airtable: 1,
+  linear: 1,
+  asana: 1,
+  calendly: 1,
+  posthog: 1,
+  mixpanel: 1,
+  ga4: 1,
+  salesforce: 1,
+  zendesk: 1,
+  intercom: 1,
+  jira: 1,
+  google_ads: 1,
+  snapchat_ads: 1,
+  reddit_ads: 1,
+  semrush: 1,
+  ahrefs: 1,
+  paypal: 1,
+  quickbooks: 1,
+  squarespace: 1,
+  wix: 1,
+  bigcommerce: 1,
+  microsoft_365: 1,
+  typeform: 1,
+  webflow: 1,
+  framer: 1,
+  loom: 1,
+  segment: 1,
+  amplitude: 1,
+  google_calendar: 1,
+  aws: 1,
+};
+
 function fetcher(workspaceId: string) {
   return api.integrations.list(workspaceId);
 }
@@ -199,6 +262,18 @@ export default function IntegrationsPage() {
     () => fetcher(workspaceId),
     { revalidateOnFocus: false },
   );
+
+  const { data: healthData, mutate: mutateHealth } = useSWR(
+    workspaceId ? ["integrations-health", workspaceId] : null,
+    () => api.integrations.health(workspaceId),
+    { revalidateOnFocus: false },
+  );
+
+  const healthByProvider = useMemo(() => {
+    const map = new Map<string, { status: string; message?: string | null }>();
+    healthData?.results?.forEach((r) => map.set(r.provider, { status: r.status, message: r.message }));
+    return map;
+  }, [healthData]);
 
   const connectionsByProvider = useMemo(() => {
     const map = new Map<string, IntegrationConnection>();
@@ -409,6 +484,31 @@ export default function IntegrationsPage() {
                               {conn.account_label}
                             </span>
                           )}
+                          {/* Tool count */}
+                          {TOOL_COUNTS[p.key] && (
+                            <span className="text-micro bg-zinc-800/50 text-[var(--color-steel)] border border-white/5 rounded-full px-2 py-0.5 text-[10px]">
+                              {TOOL_COUNTS[p.key]} tool{TOOL_COUNTS[p.key] > 1 ? "s" : ""}
+                            </span>
+                          )}
+                          {/* Health status */}
+                          {conn && healthByProvider.has(p.key) && (
+                            (() => {
+                              const h = healthByProvider.get(p.key)!;
+                              const isHealthy = h.status === "healthy";
+                              return (
+                                <span className={`text-micro rounded-full px-2 py-0.5 text-[10px] border inline-flex items-center gap-1 ${
+                                  isHealthy
+                                    ? "bg-[#00c896]/5 text-[#00c896] border-[#00c896]/15"
+                                    : h.status === "expired"
+                                    ? "bg-[rgba(255,179,71,0.05)] text-[#ffb347] border-[rgba(255,179,71,0.15)]"
+                                    : "bg-[rgba(255,77,109,0.05)] text-[#ff4d6d] border-[rgba(255,77,109,0.15)]"
+                                }`}>
+                                  <span className={`w-1 h-1 rounded-full ${isHealthy ? "bg-[#00c896]" : h.status === "expired" ? "bg-[#ffb347]" : "bg-[#ff4d6d]"}`} />
+                                  {h.status}
+                                </span>
+                              );
+                            })()
+                          )}
                         </div>
 
                         {/* Custom Telegram webhook details once connected */}
@@ -420,14 +520,24 @@ export default function IntegrationsPage() {
                       {/* Action buttons */}
                       <div className="relative mt-5 flex flex-wrap items-center gap-2.5 pt-2 border-t border-[rgba(255,255,255,0.04)]">
                         {conn ? (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="text-xs h-8 cursor-pointer rounded-lg hover:border-red-500/30 hover:text-red-400"
-                            onClick={() => onDisconnect(p.key)}
-                          >
-                            Disconnect
-                          </Button>
+                          <>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="text-xs h-8 cursor-pointer rounded-lg hover:border-red-500/30 hover:text-red-400"
+                              onClick={() => onDisconnect(p.key)}
+                            >
+                              Disconnect
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="text-xs h-8 cursor-pointer rounded-lg"
+                              onClick={() => mutateHealth()}
+                            >
+                              Test Connection
+                            </Button>
+                          </>
                         ) : p.coming_soon ? (
                           <Button variant="secondary" size="sm" className="text-xs h-8 rounded-lg" disabled>
                             Disabled

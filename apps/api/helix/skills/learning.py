@@ -65,7 +65,7 @@ async def load_learnings(
         .join(SkillRegistry, SkillRegistry.id == SkillLearning.skill_id)
         .where(SkillRegistry.name == skill_name, SkillLearning.enabled.is_(True))
     )
-    
+
     if brand_context_embedding is not None:
         stmt = stmt.order_by(
             SkillLearning.context_embedding.cosine_distance(brand_context_embedding),

@@ -6,7 +6,11 @@ Also invoked from the FastAPI lifespan.
 from __future__ import annotations
 
 from helix.core.logging import get_logger
-from helix.tools.adapters.browser_automation import BrowserUseTool, StagehandTool
+from helix.tools.adapters.analytics_extra import (
+    MixpanelApiTool,
+    OpenTableApiTool,
+    ResyApiTool,
+)
 from helix.tools.adapters.deploy import GithubRepoTool, VercelDeployTool
 from helix.tools.adapters.image import (
     FluxImageTool,
@@ -20,12 +24,63 @@ from helix.tools.adapters.llm import (
     OpenAIChatTool,
     OpenRouterChatTool,
 )
+from helix.tools.adapters.marketing import (
+    GoogleBusinessApiTool,
+    HubSpotApiTool,
+    MailchimpApiTool,
+    SendGridApiTool,
+)
+from helix.tools.adapters.messaging import (
+    DiscordApiTool,
+    InstagramApiTool,
+    MetaPagesApiTool,
+    SlackApiTool,
+    WhatsAppApiTool,
+)
+from helix.tools.adapters.new_integrations import (
+    AhrefsApiTool,
+    AmplitudeApiTool,
+    AwsApiTool,
+    BigCommerceApiTool,
+    FramerApiTool,
+    GoogleAdsApiTool,
+    GoogleCalendarApiTool,
+    IntercomApiTool,
+    JiraApiTool,
+    LoomApiTool,
+    Microsoft365ApiTool,
+    PayPalApiTool,
+    QuickBooksApiTool,
+    RedditAdsApiTool,
+    SalesforceApiTool,
+    SegmentApiTool,
+    SemrushApiTool,
+    SnapchatAdsApiTool,
+    SquarespaceApiTool,
+    TypeformApiTool,
+    WebflowApiTool,
+    WixApiTool,
+    ZendeskApiTool,
+)
 from helix.tools.adapters.productivity import (
     CanvaConnectTool,
     FigmaApiTool,
     GmailDraftTool,
     NotionApiTool,
     WebSearchTool,
+)
+from helix.tools.adapters.productivity_extra import (
+    AirtableApiTool,
+    AsanaApiTool,
+    CalendlyApiTool,
+    LinearApiTool,
+)
+from helix.tools.adapters.restaurant import (
+    DoorDashApiTool,
+    SquareApiTool,
+    ToastApiTool,
+    UberEatsApiTool,
+    YelpApiTool,
 )
 from helix.tools.adapters.saas import (
     Ga4ApiTool,
@@ -38,7 +93,13 @@ from helix.tools.adapters.saas import (
     WooCommerceApiTool,
     YouTubeApiTool,
 )
-from helix.tools.adapters.storage import PgvectorMemoryTool, S3StorageTool
+from helix.tools.adapters.social import (
+    PinterestApiTool,
+    PostHogApiTool,
+    ThreadsApiTool,
+    TikTokApiTool,
+    TwitterApiTool,
+)
 from helix.tools.registry import clear_registry, list_tools, register_tool
 
 log = get_logger(__name__)
@@ -74,12 +135,66 @@ _BUILTINS = (
     LinkedInApiTool,
     YouTubeApiTool,
     Ga4ApiTool,
-    # Storage / memory
-    S3StorageTool,
-    PgvectorMemoryTool,
-    # Browser Automation
-    BrowserUseTool,
-    StagehandTool,
+    # Messaging
+    SlackApiTool,
+    DiscordApiTool,
+    WhatsAppApiTool,
+    MetaPagesApiTool,
+    InstagramApiTool,
+    # Restaurant / POS
+    ToastApiTool,
+    SquareApiTool,
+    DoorDashApiTool,
+    UberEatsApiTool,
+    YelpApiTool,
+    # Marketing
+    MailchimpApiTool,
+    HubSpotApiTool,
+    SendGridApiTool,
+    GoogleBusinessApiTool,
+    # Productivity
+    AirtableApiTool,
+    LinearApiTool,
+    AsanaApiTool,
+    CalendlyApiTool,
+    # Social / Analytics
+    TwitterApiTool,
+    PostHogApiTool,
+    ThreadsApiTool,
+    TikTokApiTool,
+    PinterestApiTool,
+    # More analytics
+    MixpanelApiTool,
+    ResyApiTool,
+    OpenTableApiTool,
+    # New CRM & Support
+    SalesforceApiTool,
+    ZendeskApiTool,
+    IntercomApiTool,
+    JiraApiTool,
+    # New Marketing & Ads
+    GoogleAdsApiTool,
+    SnapchatAdsApiTool,
+    RedditAdsApiTool,
+    SemrushApiTool,
+    AhrefsApiTool,
+    # New E-commerce & Payments
+    PayPalApiTool,
+    QuickBooksApiTool,
+    SquarespaceApiTool,
+    WixApiTool,
+    BigCommerceApiTool,
+    # New Productivity & Design
+    Microsoft365ApiTool,
+    TypeformApiTool,
+    WebflowApiTool,
+    FramerApiTool,
+    LoomApiTool,
+    # New Analytics & Data
+    SegmentApiTool,
+    AmplitudeApiTool,
+    GoogleCalendarApiTool,
+    AwsApiTool,
 )
 
 

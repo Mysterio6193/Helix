@@ -203,9 +203,9 @@ async def execute(state: HelixState, config: dict | None = None) -> HelixState:
     if _GRAPH_COMPILED is None:
         from helix.workflows.checkpointer import checkpointer
         _GRAPH_COMPILED = _GRAPH_UNCOMPILED.compile(checkpointer=checkpointer)
-        
+
     cfg = config or {}
-    
+
     # Check if we are resuming an existing run
     if cfg:
         snapshot = await _GRAPH_COMPILED.aget_state(cfg)

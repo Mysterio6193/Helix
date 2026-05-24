@@ -201,7 +201,7 @@ class TokenConnect(BaseModel):
     extra: dict[str, Any] = Field(default_factory=dict, description="Extra fields (e.g. workspace name).")
 
 
-async def _verify_token(provider_key: str, token: str) -> dict[str, Any]:
+async def _verify_token(provider_key: str, token: str, extra: dict[str, Any] | None = None) -> dict[str, Any]:
     """Best-effort verification of a token. Returns metadata or empty dict.
 
     Verifications are non-fatal: if a provider's endpoint is unreachable we
@@ -285,12 +285,24 @@ async def _verify_token(provider_key: str, token: str) -> dict[str, Any]:
                     return {"verified": True, "account_label": me.get("name") or me.get("email"), "raw": me}
                 return {"verified": False, "error": r.text[:200]}
             if provider_key == "shopify":
-                # For shopify, just do a basic verification
-                return {
-                    "verified": True,
-                    "account_label": "Shopify Admin Storefront",
-                    "raw": {"verified": True}
-                }
+                # Extract shop domain from token extras or use a test endpoint
+                shop_domain = (extra or {}).get("shop_domain", "")
+                if not shop_domain:
+                    return {"verified": False, "error": "shop_domain required in extra fields"}
+                api_version = settings.shopify_api_version or "2024-10"
+                r = await client.get(
+                    f"https://{shop_domain}/admin/api/{api_version}/shop.json",
+                    headers={"X-Shopify-Access-Token": token}
+                )
+                if r.status_code == 200:
+                    shop = r.json().get("shop", {})
+                    return {
+                        "verified": True,
+                        "account_label": shop.get("name", shop_domain),
+                        "shop_domain": shop_domain,
+                        "raw": r.json()
+                    }
+                return {"verified": False, "error": r.text[:200]}
             if provider_key == "klaviyo":
                 # For Klaviyo, best-effort list accounts
                 r = await client.get(
@@ -339,7 +351,7 @@ async def connect_token(
         raise HTTPException(status_code=400, detail=f"{provider} is coming_soon — not connectable yet")
 
     token = payload.token.strip()
-    verification = await _verify_token(provider, token)
+    verification = await _verify_token(provider, token, payload.extra)
     label = payload.account_label or verification.get("account_label")
 
     conn = await save_credentials(
@@ -393,3 +405,17 @@ async def disconnect(
         raise HTTPException(status_code=404, detail="connection not found")
     await db.delete(conn)
     await db.commit()
+
+
+@router.get("/health")
+async def get_integration_health(
+    workspace_id: uuid.UUID = Query(...),
+    user: User = Depends(require_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Return health status for all connected integrations."""
+    await assert_workspace_access(db, user, workspace_id)
+
+    from helix.services.integration_health import run_health_checks
+
+    return await run_health_checks(db)

@@ -24,7 +24,7 @@ class ExecutiveCouncilAgent(Agent):
         event_name = ctx.state.get("event", "campaign_init")
         brand_ctx = ctx.state.get("brand_context", {})
         brand_name = brand_ctx.get("name", "Unknown Brand")
-        
+
         await emit_event(
             run_id=ctx.run_id,
             kind="boardroom.start",
@@ -41,21 +41,21 @@ class ExecutiveCouncilAgent(Agent):
 Your objective is budget efficiency, targeting, and monitoring metrics (ROAS, CTR, CAC).
 You analyze performance events and frame the strategic goals of the campaign.
 Keep your responses sharp, numerical, and execution-focused.""",
-            
+
             "copywriter": """You are the AI Copywriter for Helix OS.
 Your objective is generating high-converting marketing hooks, taglines, headlines, and call-to-actions.
 You base your copy on the brand voice guidelines and media buyer's targeting.
 Generate exactly 3 specific hook options during your turn and refine them as the debate progresses.""",
-            
+
             "creative_director": """You are the AI Creative Director for Helix OS.
 Your objective is visual aesthetics, design school compliance, and visual hierarchy.
 You must choose a visual school (Minimal, Brutalist, Editorial) and pick visual style guides.
 You criticize visual choices and align layouts to brand guidelines. Make sure Helix can render these visual schemas cleanly.""",
-            
+
             "critic": """You are the AI Critic for Helix OS.
 Your objective is compliance, edge-case detection, brand-alignment, and risk analysis.
 You teardown the proposed copy hooks and visual directions, suggesting revisions to eliminate generic writing, poor layouts, or high-risk claims.""",
-            
+
             "cmo": """You are the AI Chief Marketing Officer (CMO) for Helix OS.
 Your objective is high-level orchestration, campaign alignment, revenue optimization, and final sign-off.
 You summarize the boardroom discussion, open a formal voting round, resolve any ties, and synthesize the finalized plan."""
@@ -89,7 +89,7 @@ The boardroom must collaborate to refine:
         # Run 1 full debate cycle
         for role in turns:
             system_prompt = f"{personas[role]}\n\nRespond ONLY as this persona. Do not speak for other personas. Be highly contextual and refer directly to previous points made in the debate. Keep your reply under 250 words."
-            
+
             # Send current debate history with role-specific system prompt
             messages = [{"role": "system", "content": system_prompt}] + [
                 m for m in debate_history if m["role"] != "system"
@@ -108,7 +108,7 @@ The boardroom must collaborate to refine:
                 continue
 
             message_content = str(result.data).strip()
-            
+
             # Append to debate history so subsequent turns can see it
             debate_history.append({
                 "role": "assistant",

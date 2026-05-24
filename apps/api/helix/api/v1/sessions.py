@@ -108,7 +108,7 @@ async def update_agent_session(
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="agent session not found")
     await assert_workspace_access(db, user, session.workspace_id)
-    
+
     session = await session_service.update_agent_session(db, session, payload)
     await db.commit()
     return AgentSessionRead.model_validate(session)
@@ -210,7 +210,7 @@ async def update_scheduled_job(
     if not job:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scheduled job not found")
     await assert_workspace_access(db, user, job.workspace_id)
-    
+
     job = await session_service.update_scheduled_job(db, job, payload)
     await db.commit()
     return ScheduledJobRead.model_validate(job)
@@ -312,7 +312,7 @@ async def update_trigger(
     if not trigger:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="trigger not found")
     await assert_workspace_access(db, user, trigger.workspace_id)
-    
+
     trigger = await session_service.update_trigger(db, trigger, payload)
     await db.commit()
     return TriggerRead.model_validate(trigger)

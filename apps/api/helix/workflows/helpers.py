@@ -31,7 +31,7 @@ async def load_initial_brand_context(state: dict[str, Any]) -> dict[str, Any]:
     """Load brand context from DB at the start of a run (runs once per workflow)."""
     async with session_factory() as session:
         ctx = await load_brand_context(session, brand_id=UUID(state["brand_id"]))
-    
+
     # Compute and cache embedding for semantic learnings retrieval
     from helix.memory.embeddings import embed
     text_to_embed = f"{ctx.get('name', '')} {ctx.get('category', '')} {ctx.get('positioning', '')}"
