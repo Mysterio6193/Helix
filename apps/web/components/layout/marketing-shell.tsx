@@ -134,7 +134,7 @@ export function MarketingNav() {
 
         <div className="hidden md:flex items-center gap-3">
           {isAuthed ? (
-            <Link href="/">
+            <Link href="/overview">
               <Button
                 variant="glow"
                 size="sm"
@@ -190,7 +190,7 @@ export function MarketingNav() {
             ))}
             <div className="pt-3 mt-2 border-t border-white/[0.05] flex flex-col gap-2">
               {isAuthed ? (
-                <Link href="/">
+                <Link href="/overview">
                   <Button
                     variant="glow"
                     className="w-full h-10 text-[11px] font-bold uppercase tracking-wider"

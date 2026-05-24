@@ -46,7 +46,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Command", icon: LayoutDashboard, group: "core" },
-  { href: "/", label: "Overview", icon: Sparkles, group: "core" },
+  { href: "/overview", label: "Overview", icon: Sparkles, group: "core" },
   { href: "/brands", label: "Projects", icon: Sparkles, group: "core" },
   { href: "/workflows", label: "Workflows", icon: Activity, group: "core" },
   { href: "/assets", label: "Library", icon: ImageIcon, group: "core" },
@@ -305,7 +305,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname === "/sign-up" ||
     isMarketingRoute ||
     (pathname === "/pricing" && loaded && !user) ||
-    (pathname === "/" && !user);
+    pathname === "/";
 
   if (isBypassRoute) {
     return (
