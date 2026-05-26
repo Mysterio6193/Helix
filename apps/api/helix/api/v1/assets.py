@@ -99,20 +99,17 @@ async def get_asset(
     return _asset_to_public(row)
 
 
-def _placeholder_url(kind: str | None, size: str) -> str:
-    settings = get_settings()
-    base = settings.asset_placeholder_base.rstrip("/")
-    text = (kind or "Asset").replace("_", "+")
-    return f"{base}/{size}?text={text}"
-
-
 @router.get("/{asset_id}/url")
 async def get_asset_url(
     asset_id: uuid.UUID,
     user: User = Depends(require_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
-    """Return presigned S3 URL for asset download/display."""
+    """Return presigned S3 URL for asset download/display.
+
+    Returns 503 if the storage backend cannot presign — never falls back to a
+    placeholder image, which would silently misrepresent the asset.
+    """
     settings = get_settings()
     row = (
         await db.execute(select(Asset).where(Asset.id == asset_id))
@@ -123,10 +120,15 @@ async def get_asset_url(
 
     from helix.core.storage import get_storage
 
+    if not row.s3_key:
+        raise HTTPException(status_code=404, detail="asset has no storage key")
     try:
         url = get_storage().presign_get(row.s3_key, ttl_seconds=settings.asset_presign_ttl_seconds)
-    except Exception:
-        url = _placeholder_url(row.kind, "1024x1024")
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"asset storage unavailable: {exc}",
+        ) from exc
     return {"url": url}
 
 
@@ -136,7 +138,10 @@ async def get_asset_thumbnail(
     user: User = Depends(require_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, str]:
-    """Return presigned URL for webp thumbnail variant."""
+    """Return presigned URL for webp thumbnail variant.
+
+    Returns 503 on storage failure rather than a placeholder image.
+    """
     settings = get_settings()
     row = (
         await db.execute(select(Asset).where(Asset.id == asset_id))
@@ -147,9 +152,14 @@ async def get_asset_thumbnail(
 
     from helix.core.storage import get_storage
 
+    if not row.s3_key:
+        raise HTTPException(status_code=404, detail="asset has no storage key")
     try:
         thumb_key = row.s3_key.rsplit(".", 1)[0] + settings.asset_thumbnail_suffix
         url = get_storage().presign_get(thumb_key, ttl_seconds=settings.asset_presign_ttl_seconds)
-    except Exception:
-        url = _placeholder_url((row.kind or "Asset") + "+Thumb", "200x200")
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"asset thumbnail unavailable: {exc}",
+        ) from exc
     return {"url": url}

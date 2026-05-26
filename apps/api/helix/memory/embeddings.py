@@ -1,44 +1,44 @@
-"""Embedding generation with graceful fallback when no API key configured."""
+"""Embedding generation. Requires a configured OpenAI API key — fails fast otherwise.
+
+Previous versions returned a deterministic hash-based pseudo-embedding when no key
+was configured. That silently produced semantically meaningless vectors that
+poisoned downstream similarity search. We now require a real provider.
+"""
 from __future__ import annotations
 
-import hashlib
 from collections.abc import Iterable
 
 from helix.core.config import get_settings
+from helix.core.logging import get_logger
+
+log = get_logger(__name__)
 
 EMBED_DIM = 1536
 
 
-def _deterministic_embedding(text: str, dim: int = EMBED_DIM) -> list[float]:
-    """Hash-based pseudo-embedding for offline/dev use. Stable per input."""
-    rng_seed = hashlib.sha256(text.encode("utf-8")).digest()
-    out: list[float] = []
-    i = 0
-    while len(out) < dim:
-        chunk = rng_seed if i == 0 else hashlib.sha256(rng_seed + i.to_bytes(4, "big")).digest()
-        for b in chunk:
-            out.append((b - 128) / 128.0)
-            if len(out) >= dim:
-                break
-        i += 1
-    # L2-ish normalize for cosine distance stability
-    norm = sum(v * v for v in out) ** 0.5 or 1.0
-    return [v / norm for v in out]
+class EmbeddingProviderError(RuntimeError):
+    """Raised when no embedding provider is configured or the call fails."""
 
 
 async def embed(text: str) -> list[float]:
-    """Return a single 1536-dim embedding."""
+    """Return a single 1536-dim embedding from OpenAI text-embedding-3-small.
+
+    Raises EmbeddingProviderError if the OpenAI key is missing or the call fails.
+    """
     settings = get_settings()
     if not settings.openai_api_key:
-        return _deterministic_embedding(text)
+        raise EmbeddingProviderError(
+            "OPENAI_API_KEY is not configured. Set it to enable embeddings."
+        )
     try:
         from openai import AsyncOpenAI
 
         client = AsyncOpenAI(api_key=settings.openai_api_key)
         resp = await client.embeddings.create(model="text-embedding-3-small", input=text)
         return list(resp.data[0].embedding)
-    except Exception:
-        return _deterministic_embedding(text)
+    except Exception as exc:
+        log.exception("embedding_request_failed")
+        raise EmbeddingProviderError(f"embedding request failed: {exc}") from exc
 
 
 async def embed_batch(texts: Iterable[str]) -> list[list[float]]:

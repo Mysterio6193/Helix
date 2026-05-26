@@ -32,10 +32,15 @@ async def load_initial_brand_context(state: dict[str, Any]) -> dict[str, Any]:
     async with session_factory() as session:
         ctx = await load_brand_context(session, brand_id=UUID(state["brand_id"]))
 
-    # Compute and cache embedding for semantic learnings retrieval
-    from helix.memory.embeddings import embed
+    # Compute and cache embedding for semantic learnings retrieval.
+    # Embedding is a performance optimization, not a correctness requirement —
+    # omit it if no provider is configured so workflow startup still succeeds.
+    from helix.memory.embeddings import EmbeddingProviderError, embed
     text_to_embed = f"{ctx.get('name', '')} {ctx.get('category', '')} {ctx.get('positioning', '')}"
-    ctx["embedding"] = await embed(text_to_embed)
+    try:
+        ctx["embedding"] = await embed(text_to_embed)
+    except EmbeddingProviderError:
+        ctx["embedding"] = None
     return ctx
 
 

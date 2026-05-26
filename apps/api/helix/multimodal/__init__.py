@@ -279,17 +279,86 @@ class VideoAnalyzer:
     ) -> dict[str, Any]:
         """Analyze a video by sampling frames and describing them.
 
-        Note: This is a simplified version. For production, you'd want to use
-        ffmpeg to extract frames server-side.
+        Requires ffmpeg available on PATH. Extracts num_frames evenly spaced
+        frames from the video, analyzes each with VisionAnalyzer, and returns
+        a structured summary.
         """
-        # For now, return a placeholder that suggests using the video URL
-        # In production, this would extract frames and analyze them
-        return {
-            "success": True,
-            "note": "Video analysis requires frame extraction. Use VisionAnalyzer with extracted frames.",
-            "video_url": video_url,
-            "suggested_frames": num_frames,
-        }
+        import asyncio
+        import base64
+        import json
+        import shutil
+        import tempfile
+        from pathlib import Path
+
+        if shutil.which("ffmpeg") is None or shutil.which("ffprobe") is None:
+            return {
+                "success": False,
+                "error": "ffmpeg_not_available",
+                "detail": "Install ffmpeg to enable video frame analysis.",
+            }
+
+        tmpdir = Path(tempfile.mkdtemp(prefix="helix_video_"))
+        try:
+            # Download video locally
+            video_path = tmpdir / "input"
+            async with httpx.AsyncClient(timeout=120, follow_redirects=True) as client:
+                resp = await client.get(video_url)
+                resp.raise_for_status()
+                video_path.write_bytes(resp.content)
+
+            # Probe duration
+            probe = await asyncio.create_subprocess_exec(
+                "ffprobe", "-v", "error", "-show_entries", "format=duration",
+                "-of", "json", str(video_path),
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+            )
+            probe_out, _ = await probe.communicate()
+            try:
+                duration = float(json.loads(probe_out).get("format", {}).get("duration", 0.0))
+            except (ValueError, json.JSONDecodeError):
+                duration = 0.0
+            if duration <= 0:
+                return {"success": False, "error": "video_duration_unknown"}
+
+            # Extract evenly spaced frames
+            count = max(1, min(num_frames, 20))
+            timestamps = [duration * (i + 1) / (count + 1) for i in range(count)]
+            frame_paths: list[Path] = []
+            for idx, ts in enumerate(timestamps):
+                out_path = tmpdir / f"frame_{idx:03d}.jpg"
+                proc = await asyncio.create_subprocess_exec(
+                    "ffmpeg", "-y", "-ss", f"{ts:.2f}", "-i", str(video_path),
+                    "-frames:v", "1", "-q:v", "3", str(out_path),
+                    stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL,
+                )
+                await proc.wait()
+                if out_path.exists():
+                    frame_paths.append(out_path)
+
+            if not frame_paths:
+                return {"success": False, "error": "frame_extraction_failed"}
+
+            # Analyze each frame
+            analyzer = VisionAnalyzer()
+            frame_results = []
+            for fp in frame_paths:
+                b64 = base64.b64encode(fp.read_bytes()).decode("ascii")
+                frame_results.append(
+                    await analyzer.analyze_image(image_base64=b64, prompt=analysis_prompt)
+                )
+
+            return {
+                "success": True,
+                "video_url": video_url,
+                "duration_seconds": duration,
+                "frame_count": len(frame_results),
+                "frames": frame_results,
+            }
+        except Exception as exc:
+            log.exception("video_analysis_failed")
+            return {"success": False, "error": str(exc)}
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 # Convenience instances

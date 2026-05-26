@@ -258,8 +258,13 @@ async def compute_customer_segments(
     user: User = Depends(require_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    """Compute customer segments from order data."""
-    # Fetch performance snapshots as mock order data
+    """Compute customer segments from real order-level data.
+
+    Requires per-customer order rows in PerformanceSnapshot.data (keys:
+    customer_id, total_price, created_at). Aggregate metric snapshots do not
+    contain customer identity and cannot be used to compute RFM — returning
+    fabricated single-customer data would poison downstream segmentation.
+    """
     result = await db.execute(
         select(PerformanceSnapshot)
         .where(
@@ -271,18 +276,41 @@ async def compute_customer_segments(
     )
     snapshots = result.scalars().all()
 
-    # Create mock orders from snapshot data for RFM calculation
-    orders = []
+    # Only accept snapshots that carry order-level rows in their metadata payload.
+    orders: list[dict[str, Any]] = []
     for snap in snapshots:
-        orders.append({
-            "customer_id": f"customer_{snap.workspace_id}",
-            "total_price": snap.value * 50,  # Mock value
-            "created_at": snap.captured_at.isoformat() if snap.captured_at else datetime.utcnow().isoformat(),
-        })
+        payload = snap.metadata_ or {}
+        rows = payload.get("orders") if isinstance(payload, dict) else None
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            cid = row.get("customer_id") or row.get("customer", {}).get("id")
+            price = row.get("total_price") or row.get("total")
+            created = row.get("created_at") or row.get("processed_at")
+            if cid is None or price is None or created is None:
+                continue
+            orders.append({
+                "customer_id": str(cid),
+                "total_price": float(price),
+                "created_at": str(created),
+            })
+
+    if not orders:
+        return {
+            "total_customers": 0,
+            "segments": {},
+            "sample_customers": [],
+            "reason": "no_order_level_data",
+            "detail": (
+                "Customer segmentation requires per-order ingestion (customer_id, "
+                "total_price, created_at) under PerformanceSnapshot.data['orders']. "
+                "Connect Shopify or run the orders ingestion job to populate."
+            ),
+        }
 
     rfm = calculate_rfm(orders)
-
-    # Aggregate into segments
     segment_counts: dict[str, int] = {}
     for customer in rfm.values():
         seg = customer["segment"]

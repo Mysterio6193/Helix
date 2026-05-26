@@ -32,10 +32,11 @@ async def reflect_on_run(state: HelixState) -> list[dict[str, Any]]:
     critiques = state.get("critiques", [])
     brand_context = state.get("brand_context", {})
 
-    # Offline/No-key fallback: extract simple recency/status-based learnings without LLM
+    # No key: emit zero learnings rather than fabricating them.
+    # Storing synthetic learnings would poison future skill runs.
     if not settings.openai_api_key:
-        log.info("openai_api_key_not_found_skipping_llm_reflection")
-        return _offline_fallback_reflection(state, run_id, brand_id)
+        log.warning("reflection_skipped_no_openai_key")
+        return []
 
     # Calculate average critic score or final score
     avg_critic_score = 0.0
@@ -141,48 +142,7 @@ Respond ONLY with valid JSON. Do not include markdown blocks like ```json or any
         return output_learnings
 
     except Exception:
-        log.exception("llm_reflection_failed_falling_back")
-        return _offline_fallback_reflection(state, run_id, brand_id)
-
-
-def _offline_fallback_reflection(state: HelixState, run_id: uuid.UUID, brand_id: uuid.UUID | None) -> list[dict[str, Any]]:
-    """Deterministic fallback for local/offline environments without LLM keys."""
-    learnings = []
-    steps = state.get("steps", [])
-    critiques = state.get("critiques", [])
-    brand_context = state.get("brand_context", {})
-    workflow = state.get("workflow", "unknown")
-    brand_category = brand_context.get("category", "unknown")
-    design_school = state.get("design_school", "default")
-
-    avg_critic_score = 8.0
-    if critiques:
-        scores = [c.get("score", 0.0) for c in critiques if c.get("score") is not None]
-        if scores:
-            avg_critic_score = sum(scores) / len(scores)
-
-    for step in steps:
-        skill_name = step.get("skill")
-        if step.get("status") == "ok" and skill_name:
-            trigger_context = f"{brand_category} brand under {design_school} school inside {workflow} workflow."
-
-            # Simple deterministic prompt delta based on state
-            prompt_delta = (
-                f"For the {skill_name} skill, ensure output strictly conforms to "
-                f"the {design_school} style school with color palette {brand_context.get('palette', [])}."
-            )
-
-            learnings.append({
-                "skill_name": skill_name,
-                "workflow_run_id": run_id,
-                "brand_id": brand_id,
-                "trigger_context": trigger_context,
-                "prompt_delta": prompt_delta,
-                "score": avg_critic_score,
-                "success_markers": {
-                    "critic_score": avg_critic_score,
-                    "cost_usd": step.get("cost_usd", 0.0),
-                    "duration_ms": int((step.get("ended_at", 0) - step.get("started_at", 0)) * 1000) if step.get("ended_at") else 0,
-                }
-            })
-    return learnings
+        # LLM reflection failed — emit zero learnings instead of fabricating them.
+        # The closed-loop learning store must contain only real, model-derived insights.
+        log.exception("llm_reflection_failed_returning_empty")
+        return []
