@@ -122,6 +122,11 @@ const TOOL_COUNTS: Record<string, number> = {
   amplitude: 1,
   google_calendar: 1,
   aws: 1,
+  // OAuth providers
+  canva: 1,
+  figma: 1,
+  notion: 1,
+  google: 1,
   // POS Systems
   petpooja: 1,
   clover: 1,
