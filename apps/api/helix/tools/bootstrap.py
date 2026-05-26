@@ -35,6 +35,7 @@ from helix.tools.adapters.messaging import (
     InstagramApiTool,
     MetaPagesApiTool,
     SlackApiTool,
+    TelegramApiTool,
     WhatsAppApiTool,
 )
 from helix.tools.adapters.new_integrations import (
@@ -159,6 +160,7 @@ _BUILTINS = (
     WhatsAppApiTool,
     MetaPagesApiTool,
     InstagramApiTool,
+    TelegramApiTool,
     # Restaurant / POS
     ToastApiTool,
     SquareApiTool,

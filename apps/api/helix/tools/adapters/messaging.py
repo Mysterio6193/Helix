@@ -1,4 +1,4 @@
-"""Messaging tool adapters: Slack, Discord, WhatsApp Business, Meta Pages, Instagram.
+"""Messaging tool adapters: Slack, Discord, WhatsApp Business, Meta Pages, Instagram, Telegram.
 
 All tools require valid credentials from tool_connections. No mock fallbacks.
 """
@@ -279,6 +279,65 @@ class MetaPagesApiTool(Tool):
             except Exception as exc:
                 log.exception("meta_pages_api_request_failed")
                 return ToolResult(ok=False, error=f"Meta Pages communication failed: {exc}")
+
+
+class TelegramApiTool(Tool):
+    name = "telegram_api"
+    description = (
+        "Interact with Telegram Bot API: send messages to chats, get updates, "
+        "get bot info, and manage the webhook."
+    )
+
+    async def _call(
+        self,
+        *,
+        op: str,
+        session: Any = None,
+        workspace_id: Any = None,
+        chat_id: str = "",
+        text: str = "",
+        **_: Any,
+    ) -> ToolResult:
+        creds = _resolve_creds(session, workspace_id, "telegram")
+        if not creds:
+            return ToolResult(ok=False, error="Telegram not connected. Go to Integrations > Telegram to connect.")
+
+        token = creds.get("token")
+        if not token:
+            return ToolResult(ok=False, error="Telegram credentials incomplete. Reconnect your bot.")
+
+        base = f"https://api.telegram.org/bot{token}"
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            try:
+                if op == "send_message":
+                    if not chat_id or not text:
+                        return ToolResult(ok=False, error="chat_id and text required")
+                    r = await client.post(
+                        f"{base}/sendMessage",
+                        json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+                    )
+                elif op == "get_me":
+                    r = await client.get(f"{base}/getMe")
+                elif op == "get_webhook_info":
+                    r = await client.get(f"{base}/getWebhookInfo")
+                elif op == "set_webhook":
+                    url = _.get("url", "")
+                    if not url:
+                        return ToolResult(ok=False, error="url required for set_webhook")
+                    r = await client.post(f"{base}/setWebhook", json={"url": url})
+                elif op == "delete_webhook":
+                    r = await client.get(f"{base}/deleteWebhook")
+                else:
+                    return ToolResult(ok=False, error=f"unknown op: {op}")
+
+                data = r.json()
+                if data.get("ok"):
+                    return ToolResult(ok=True, data=data.get("result", data))
+                return ToolResult(ok=False, error=f"Telegram error: {data.get('description', r.text)}")
+            except Exception as exc:
+                log.exception("telegram_api_request_failed")
+                return ToolResult(ok=False, error=f"Telegram communication failed: {exc}")
 
 
 class InstagramApiTool(Tool):

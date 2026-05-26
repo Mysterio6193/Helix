@@ -40,6 +40,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   productivity: "Productivity & Ops",
   analytics: "Analytics & Data",
   design: "Design & Content",
+  infrastructure: "Infrastructure & Cloud",
   other: "Other",
 };
 
@@ -56,6 +57,7 @@ const CATEGORY_ORDER = [
   "productivity",
   "analytics",
   "design",
+  "infrastructure",
   "other",
 ];
 
